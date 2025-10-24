@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
 from flask_login import LoginManager, current_user, login_required
 from database import db, User, init_db, get_all_cedentes, add_cedente, update_cedente, delete_cedente
 from database import get_documentos_cedente, salvar_documentos_cedente, verificar_documentos_completos
@@ -15,10 +15,23 @@ from datetime import datetime, timedelta
 def create_app():
     app = Flask(__name__)
     
-    # Configurações para Railway
+    # Configurações para Railway (OTIMIZADAS)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-please-change-in-production')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///cedentes.db').replace('postgres://', 'postgresql://')
+    
+    # Configuração do banco de dados para Railway
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cedentes.db'
+    
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_recycle': 300,
+        'pool_pre_ping': True
+    }
     
     # Inicializar extensões
     db.init_app(app)
@@ -32,7 +45,7 @@ def create_app():
     
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
     
     # Registrar blueprints
     app.register_blueprint(auth)
@@ -42,8 +55,9 @@ def create_app():
         # Criar tabelas do SQLAlchemy (autenticação)
         db.create_all()
         
-        # Inicializar banco SQLite original
-        init_db()
+        # Inicializar banco SQLite original (apenas se não for PostgreSQL)
+        if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+            init_db()
         
         # Criar usuário admin padrão se não existir
         admin_user = User.query.filter_by(email='admin@goldcreditsa.com.br').first()
@@ -52,17 +66,22 @@ def create_app():
                 email='admin@goldcreditsa.com.br',
                 name='Administrador'
             )
-            admin_user.set_password(os.environ.get('ADMIN_PASSWORD', 'admin123'))
+            admin_user.set_password(os.environ.get('ADMIN_PASSWORD', 'Master@key2025@'))
             db.session.add(admin_user)
             db.session.commit()
             print("✅ Usuário admin criado: admin@goldcreditsa.com.br")
 
     # =============================================================================
-    # SISTEMA DE BACKUP AUTOMÁTICO
+    # SISTEMA DE BACKUP AUTOMÁTICO (APENAS PARA SQLITE)
     # =============================================================================
 
     def backup_automatico_diario():
-        """Função para backup automático diário"""
+        """Função para backup automático diário - apenas para SQLite"""
+        # Verificar se estamos usando SQLite
+        if 'sqlite' not in app.config['SQLALCHEMY_DATABASE_URI']:
+            print("⚠️ Backup automático desativado - usando PostgreSQL")
+            return
+            
         while True:
             try:
                 # Esperar até 2:00 AM
@@ -84,9 +103,10 @@ def create_app():
                 print(f"Erro no backup automático: {e}")
                 time.sleep(300)  # Esperar 5 minutos em caso de erro
 
-    # Iniciar thread de backup automático em background
-    backup_thread = threading.Thread(target=backup_automatico_diario, daemon=True)
-    backup_thread.start()
+    # Iniciar thread de backup automático em background (apenas SQLite)
+    if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+        backup_thread = threading.Thread(target=backup_automatico_diario, daemon=True)
+        backup_thread.start()
 
     # =============================================================================
     # SISTEMA DE VERIFICAÇÃO AUTOMÁTICA DE NOTIFICAÇÕES
@@ -214,10 +234,12 @@ def create_app():
     # =============================================================================
 
     @app.route('/')
-    @login_required
     def index():
-        """Página principal"""
-        return render_template('index.html', user=current_user)
+        """Página inicial - Redireciona para login se não autenticado"""
+        if current_user.is_authenticated:
+            return render_template('index.html', user=current_user)
+        else:
+            return redirect(url_for('auth.login'))
 
     @app.route('/dashboard')
     @login_required
@@ -234,7 +256,7 @@ def create_app():
     def get_cedentes():
         """API para buscar todos os cedentes ORDENADOS POR NOME"""
         try:
-            cedentes = get_all_cedentes()  # Já vem ordenado por nome do database.py
+            cedentes = get_all_cedentes()
             return jsonify(cedentes)
         except Exception as e:
             return jsonify({'success': False, 'message': f'Erro ao buscar cedentes: {str(e)}'}), 500
@@ -246,7 +268,6 @@ def create_app():
         try:
             data = request.get_json()
             
-            # Validações básicas
             if not data or 'nome' not in data or 'cpf_cnpj' not in data or 'contrato' not in data:
                 return jsonify({'success': False, 'message': 'Dados incompletos!'}), 400
             
@@ -254,7 +275,7 @@ def create_app():
                 nome_razao_social=data['nome'],
                 cpf_cnpj=data['cpf_cnpj'],
                 contrato=data['contrato'],
-                validade_contrato=data.get('validade_contrato')  # Novo campo
+                validade_contrato=data.get('validade_contrato')
             )
             
             if success:
@@ -271,7 +292,6 @@ def create_app():
         try:
             data = request.get_json()
             
-            # Validações básicas
             if not data or 'nome' not in data or 'cpf_cnpj' not in data or 'contrato' not in data:
                 return jsonify({'success': False, 'message': 'Dados incompletos!'}), 400
             
@@ -280,7 +300,7 @@ def create_app():
                 nome_razao_social=data['nome'],
                 cpf_cnpj=data['cpf_cnpj'],
                 contrato=data['contrato'],
-                validade_contrato=data.get('validade_contrato')  # Novo campo
+                validade_contrato=data.get('validade_contrato')
             )
             
             if success:
@@ -343,7 +363,6 @@ def create_app():
             success = salvar_documentos_cedente(cedente_id, data)
             
             if success:
-                # Verifica se todos os documentos estão completos
                 documentos_completos = verificar_documentos_completos(cedente_id)
                 return jsonify({
                     'success': True,
@@ -366,7 +385,7 @@ def create_app():
             return jsonify({'success': False, 'message': f'Erro ao verificar documentos: {str(e)}'}), 500
 
     # =============================================================================
-    # ROTAS DE BACKUP (PROTEGIDAS)
+    # ROTAS DE BACKUP (PROTEGIDAS) - APENAS PARA SQLITE
     # =============================================================================
 
     @app.route('/api/backup/criar', methods=['POST'])
@@ -374,6 +393,13 @@ def create_app():
     def criar_backup():
         """API para criar backup manual"""
         try:
+            # Verificar se estamos usando SQLite
+            if 'sqlite' not in app.config['SQLALCHEMY_DATABASE_URI']:
+                return jsonify({
+                    'success': False, 
+                    'message': 'Backup manual não disponível para PostgreSQL. Use o sistema de backup do Railway.'
+                }), 400
+            
             data = request.get_json() or {}
             motivo = data.get('motivo', 'manual')
             
@@ -387,6 +413,15 @@ def create_app():
     def listar_backups():
         """API para listar todos os backups"""
         try:
+            # Verificar se estamos usando SQLite
+            if 'sqlite' not in app.config['SQLALCHEMY_DATABASE_URI']:
+                return jsonify({
+                    'success': True,
+                    'backups': [],
+                    'estatisticas': {'total_backups': 0},
+                    'message': 'Usando PostgreSQL - backup gerenciado pela Railway'
+                })
+            
             backups = backup_manager.listar_backups()
             estatisticas = backup_manager.obter_estatisticas_backup()
             
@@ -403,6 +438,13 @@ def create_app():
     def restaurar_backup():
         """API para restaurar backup"""
         try:
+            # Verificar se estamos usando SQLite
+            if 'sqlite' not in app.config['SQLALCHEMY_DATABASE_URI']:
+                return jsonify({
+                    'success': False, 
+                    'message': 'Restauração manual não disponível para PostgreSQL.'
+                }), 400
+            
             data = request.get_json()
             if not data or 'filename' not in data:
                 return jsonify({'success': False, 'message': 'Nome do arquivo de backup não especificado!'}), 400
@@ -417,6 +459,18 @@ def create_app():
     def obter_estatisticas_backup():
         """API para obter estatísticas de backup"""
         try:
+            # Verificar se estamos usando SQLite
+            if 'sqlite' not in app.config['SQLALCHEMY_DATABASE_URI']:
+                return jsonify({
+                    'success': True, 
+                    'estatisticas': {
+                        'total_backups': 0,
+                        'tamanho_total': '0 MB',
+                        'ultimo_backup': None,
+                        'message': 'Usando PostgreSQL - backup gerenciado pela Railway'
+                    }
+                })
+            
             estatisticas = backup_manager.obter_estatisticas_backup()
             return jsonify({'success': True, 'estatisticas': estatisticas})
         except Exception as e:
@@ -502,10 +556,8 @@ def create_app():
             from io import BytesIO
             from datetime import datetime
             
-            # Obter dados dos cedentes
             cedentes = get_all_cedentes()
             
-            # Criar DataFrame
             df_data = []
             for cedente in cedentes:
                 df_data.append({
@@ -520,13 +572,10 @@ def create_app():
             
             df = pd.DataFrame(df_data)
             
-            # Criar arquivo Excel em memória
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                # Planilha principal
                 df.to_excel(writer, sheet_name='Cedentes', index=False)
                 
-                # Planilha de estatísticas
                 stats_data = {
                     'Estatística': [
                         'Total de Cedentes',
@@ -546,7 +595,6 @@ def create_app():
                 stats_df = pd.DataFrame(stats_data)
                 stats_df.to_excel(writer, sheet_name='Estatísticas', index=False)
                 
-                # Ajustar largura das colunas
                 for sheet_name in writer.sheets:
                     worksheet = writer.sheets[sheet_name]
                     for column in worksheet.columns:
@@ -591,7 +639,6 @@ def create_app():
             if not cedentes_filtrados:
                 return jsonify({'success': False, 'message': 'Nenhum dado para exportar!'}), 400
             
-            # Criar DataFrame
             df_data = []
             for cedente in cedentes_filtrados:
                 df_data.append({
@@ -605,12 +652,10 @@ def create_app():
             
             df = pd.DataFrame(df_data)
             
-            # Criar arquivo Excel em memória
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 df.to_excel(writer, sheet_name='Cedentes Filtrados', index=False)
                 
-                # Ajustar largura das colunas
                 worksheet = writer.sheets['Cedentes Filtrados']
                 for column in worksheet.columns:
                     max_length = 0
@@ -645,4 +690,5 @@ app = create_app()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=port, debug=debug)
