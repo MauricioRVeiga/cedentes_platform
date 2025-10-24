@@ -11,6 +11,7 @@ pytz==2025.2
 six==1.16.0
 tzdata==2025.2
 Werkzeug==2.3.7
+psycopg2-binary==2.9.7
 # Apenas gunicorn para Railway (psycopg2 será instalado automaticamente na Railway)
 gunicorn==21.2.0
 python-dotenv==1.0.0
