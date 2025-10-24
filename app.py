@@ -11,6 +11,23 @@ import threading
 import time
 import os
 from datetime import datetime, timedelta
+from sqlalchemy import text
+
+def wait_for_database(app, max_retries=10, delay=3):
+    """Aguarda o banco de dados ficar disponível"""
+    print("⏳ Aguardando banco de dados ficar disponível...")
+    for i in range(max_retries):
+        try:
+            with app.app_context():
+                db.session.execute(text('SELECT 1'))
+                print("✅ Banco de dados conectado com sucesso!")
+                return True
+        except Exception as e:
+            print(f"⏳ Tentativa {i+1}/{max_retries}: Banco não disponível - {str(e)[:100]}...")
+            if i < max_retries - 1:  # Não esperar na última tentativa
+                time.sleep(delay)
+    print("❌ Timeout aguardando banco de dados")
+    return False
 
 def create_app():
     app = Flask(__name__)
@@ -30,8 +47,15 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_recycle': 300,
-        'pool_pre_ping': True
+        'pool_pre_ping': True,
+        'pool_size': 5,
+        'max_overflow': 10,
+        'pool_timeout': 30,
     }
+    
+    # DEBUG: Verificar configurações
+    print(f"🔧 Configuração do Banco: {app.config['SQLALCHEMY_DATABASE_URI'][:50]}...")
+    print(f"🔧 Railway Environment: {'RAILWAY_ENVIRONMENT' in os.environ}")
     
     # Inicializar extensões
     db.init_app(app)
@@ -50,26 +74,56 @@ def create_app():
     # Registrar blueprints
     app.register_blueprint(auth)
     
-    # Inicializar banco de dados
+    # HEALTH CHECK (DEVE VIR ANTES DA INICIALIZAÇÃO DO BANCO)
+    @app.route('/health')
+    def health_check():
+        """Endpoint de health check para o Railway"""
+        try:
+            # Tentar conectar com o banco
+            db.session.execute(text('SELECT 1'))
+            db_status = 'healthy'
+        except Exception as e:
+            db_status = f'unhealthy: {str(e)[:100]}'
+        
+        return jsonify({
+            'status': 'running',
+            'database': db_status,
+            'timestamp': datetime.now().isoformat()
+        })
+    
+    # Inicializar banco de dados COM TRATAMENTO DE ERRO
     with app.app_context():
-        # Criar tabelas do SQLAlchemy (autenticação)
-        db.create_all()
-        
-        # Inicializar banco SQLite original (apenas se não for PostgreSQL)
-        if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
-            init_db()
-        
-        # Criar usuário admin padrão se não existir
-        admin_user = User.query.filter_by(email='admin@goldcreditsa.com.br').first()
-        if not admin_user:
-            admin_user = User(
-                email='admin@goldcreditsa.com.br',
-                name='Administrador'
-            )
-            admin_user.set_password(os.environ.get('ADMIN_PASSWORD', 'Master@key2025@'))
-            db.session.add(admin_user)
-            db.session.commit()
-            print("✅ Usuário admin criado: admin@goldcreditsa.com.br")
+        try:
+            # Aguardar banco ficar pronto (apenas em produção com PostgreSQL)
+            if 'RAILWAY_ENVIRONMENT' in os.environ and 'postgresql' in app.config['SQLALCHEMY_DATABASE_URI']:
+                wait_for_database(app)
+            
+            # Criar tabelas do SQLAlchemy (autenticação)
+            db.create_all()
+            print("✅ Tabelas de autenticação criadas com sucesso!")
+            
+            # Inicializar banco SQLite original (apenas se não for PostgreSQL)
+            if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+                init_db()
+                print("✅ Banco SQLite inicializado")
+            else:
+                print("✅ Usando PostgreSQL - pulando inicialização SQLite")
+            
+            # Criar usuário admin padrão se não existir
+            admin_user = User.query.filter_by(email='admin@goldcreditsa.com.br').first()
+            if not admin_user:
+                admin_user = User(
+                    email='admin@goldcreditsa.com.br',
+                    name='Administrador'
+                )
+                admin_user.set_password(os.environ.get('ADMIN_PASSWORD', 'Master@key2025@'))
+                db.session.add(admin_user)
+                db.session.commit()
+                print("✅ Usuário admin criado: admin@goldcreditsa.com.br")
+                
+        except Exception as e:
+            print(f"⚠️ Aviso durante inicialização do banco: {e}")
+            print("⏳ O banco pode estar inicializando... A aplicação continuará sem algumas funcionalidades iniciais.")
 
     # =============================================================================
     # SISTEMA DE BACKUP AUTOMÁTICO (APENAS PARA SQLITE)
@@ -688,11 +742,8 @@ def create_app():
 
 app = create_app()
 
-# NO FINAL do app.py, ANTES do if __name__ == '__main__':
-print("✅ Todas as dependências carregadas com sucesso!")
-print(f"✅ Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    print(f"🚀 Iniciando servidor na porta {port} (debug: {debug})")
     app.run(host='0.0.0.0', port=port, debug=debug)
