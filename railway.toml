@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "gunicorn app:app"
+
+[env]
+SECRET_KEY = "8adfab3943ad08f2aac6952d4b529cedecb4b7398ffc4e8b552a081179e5a4fd"

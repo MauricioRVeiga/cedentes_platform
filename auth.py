@@ -1,7 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from database import db, User
-from werkzeug.security import check_password_hash
 
 # Criar o Blueprint para autenticação
 auth = Blueprint('auth', __name__)
@@ -9,9 +8,10 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    # Se o usuário já estiver logado, redireciona para a página inicial
+    """Página de login - agora é a página inicial"""
+    # Se o usuário já estiver logado, redireciona para o dashboard
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
         email = request.form.get('email')
@@ -20,17 +20,17 @@ def login():
         # Validar se o email foi preenchido
         if not email:
             flash('Por favor, informe o email.', 'error')
-            return render_template('login.html')
+            return render_template('auth/login.html')
         
         # Validar domínio do email
         if not User.validate_email_domain(email):
             flash('Apenas emails do domínio @goldcreditsa.com.br são permitidos.', 'error')
-            return render_template('login.html')
+            return render_template('auth/login.html')
         
         # Validar se a senha foi preenchida
         if not password:
             flash('Por favor, informe a senha.', 'error')
-            return render_template('login.html')
+            return render_template('auth/login.html')
         
         # Buscar usuário no banco de dados
         user = User.query.filter_by(email=email).first()
@@ -43,39 +43,20 @@ def login():
             # Mensagem de sucesso
             flash(f'Bem-vindo(a), {user.name}!', 'success')
             
-            # Redirecionar para a página que o usuário tentou acessar ou para a página inicial
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('index'))
+            # Redirecionar para o dashboard
+            return redirect(url_for('dashboard'))
         else:
             flash('Email ou senha inválidos.', 'error')
     
-    return render_template('login.html')
-
-
-@auth.route('/logout')
-@login_required
-def logout():
-    # Fazer logout do usuário
-    logout_user()
-    flash('Você foi desconectado com sucesso.', 'success')
-    return redirect(url_for('auth.login'))
-
-
-# Rota para teste - pode remover depois
-@auth.route('/profile')
-@login_required
-def profile():
-    return f'<h1>Perfil do usuário: {current_user.email}</h1><a href="/logout">Sair</a>'
+    return render_template('auth/login.html')
 
 
 @auth.route('/register', methods=['GET', 'POST'])
-@login_required
 def register():
-    """Página de cadastro de novos usuários (apenas para admin)"""
-    # Apenas administradores podem cadastrar novos usuários
-    if current_user.email != 'admin@goldcreditsa.com.br':
-        flash('Apenas administradores podem cadastrar novos usuários.', 'error')
-        return redirect(url_for('index'))
+    """Página de cadastro público - apenas para domínio @goldcreditsa.com.br"""
+    # Se o usuário já estiver logado, redireciona para o dashboard
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
         email = request.form.get('email')
@@ -86,26 +67,26 @@ def register():
         # Validações
         if not all([email, name, password, confirm_password]):
             flash('Todos os campos são obrigatórios.', 'error')
-            return render_template('register.html')
+            return render_template('auth/register.html')
         
         if password != confirm_password:
             flash('As senhas não coincidem.', 'error')
-            return render_template('register.html')
+            return render_template('auth/register.html')
         
         if len(password) < 6:
             flash('A senha deve ter pelo menos 6 caracteres.', 'error')
-            return render_template('register.html')
+            return render_template('auth/register.html')
         
         # Validar domínio do email
         if not User.validate_email_domain(email):
             flash('Apenas emails do domínio @goldcreditsa.com.br são permitidos.', 'error')
-            return render_template('register.html')
+            return render_template('auth/register.html')
         
         # Verificar se o usuário já existe
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash('Este email já está cadastrado.', 'error')
-            return render_template('register.html')
+            return render_template('auth/register.html')
         
         # Criar novo usuário
         try:
@@ -118,14 +99,23 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             
-            flash(f'Usuário {name} cadastrado com sucesso!', 'success')
-            return redirect(url_for('auth.manage_users'))
+            flash(f'Usuário {name} cadastrado com sucesso! Faça login para continuar.', 'success')
+            return redirect(url_for('auth.login'))
             
         except Exception as e:
             db.session.rollback()
             flash('Erro ao cadastrar usuário. Tente novamente.', 'error')
     
-    return render_template('register.html')
+    return render_template('auth/register.html')
+
+
+@auth.route('/logout')
+@login_required
+def logout():
+    """Fazer logout do usuário"""
+    logout_user()
+    flash('Você foi desconectado com sucesso.', 'success')
+    return redirect(url_for('auth.login'))
 
 
 @auth.route('/manage-users')
@@ -134,10 +124,10 @@ def manage_users():
     """Página de gerenciamento de usuários (apenas admin)"""
     if current_user.email != 'admin@goldcreditsa.com.br':
         flash('Apenas administradores podem gerenciar usuários.', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
     
     users = User.query.filter(User.email != 'admin@goldcreditsa.com.br').all()
-    return render_template('manage_users.html', users=users)
+    return render_template('auth/manage_users.html', users=users)
 
 
 @auth.route('/delete-user/<int:user_id>', methods=['POST'])
@@ -150,7 +140,7 @@ def delete_user(user_id):
     if current_user.id == user_id:
         return jsonify({'success': False, 'message': 'Não é possível excluir sua própria conta.'}), 400
     
-    user = User.query.get(user_id)
+    user = db.session.get(User, int(user_id))
     if not user:
         return jsonify({'success': False, 'message': 'Usuário não encontrado.'}), 404
     

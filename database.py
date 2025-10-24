@@ -8,7 +8,6 @@ import re
 # Inicializar SQLAlchemy para autenticação
 db = SQLAlchemy()
 
-
 # Modelo de Usuário para autenticação
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -38,105 +37,135 @@ class User(UserMixin, db.Model):
         return f'<User {self.email}>'
 
 # =============================================================================
-# CÓDIGO ORIGINAL DO BANCO DE DADOS (mantido para compatibilidade)
+# CÓDIGO ORIGINAL DO BANCO DE DADOS (SQLite) - Compatibilidade
 # =============================================================================
 
+def get_db_path():
+    """Retorna o caminho do banco SQLite baseado no ambiente"""
+    if 'RAILWAY_ENVIRONMENT' in os.environ:
+        # No Railway, usar diretório temporário
+        return '/tmp/cedentes.db'
+    else:
+        # Localmente, usar instance/
+        os.makedirs('instance', exist_ok=True)
+        return os.path.join('instance', 'cedentes.db')
 
-DB_PATH = os.path.join('instance', 'cedentes.db')
-
+DB_PATH = get_db_path()
 
 def get_db_connection():
-    """Cria conexão com o banco de dados"""
-    os.makedirs('instance', exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
-
+    """Cria conexão com o banco de dados SQLite"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        
+        # Ativar chaves estrangeiras
+        conn.execute('PRAGMA foreign_keys = ON')
+        
+        return conn
+    except Exception as e:
+        print(f"❌ Erro ao conectar com SQLite: {e}")
+        return None
 
 def init_db():
-    """Inicializa o banco de dados com todas as tabelas necessárias"""
+    """Inicializa o banco de dados SQLite com todas as tabelas necessárias"""
     conn = get_db_connection()
+    if not conn:
+        print("❌ Não foi possível conectar ao banco SQLite")
+        return False
     
-    # Tabela de cedentes
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS cedentes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome_razao_social TEXT NOT NULL,
-            cpf_cnpj TEXT NOT NULL,
-            contrato TEXT NOT NULL,
-            validade_contrato DATE NULL,
-            data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # Tabela de documentos
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS documentos_cedente (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cedente_id INTEGER NOT NULL,
-            contrato_social BOOLEAN DEFAULT 0,
-            cartao_cnpj BOOLEAN DEFAULT 0,
-            faturamento_12meses BOOLEAN DEFAULT 0,
-            dre_balanco BOOLEAN DEFAULT 0,
-            cnh_rg_socios BOOLEAN DEFAULT 0,
-            ir_socios BOOLEAN DEFAULT 0,
-            comprovante_endereco BOOLEAN DEFAULT 0,
-            email BOOLEAN DEFAULT 0,
-            curva_abc BOOLEAN DEFAULT 0,
-            dados_bancarios BOOLEAN DEFAULT 0,
-            data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (cedente_id) REFERENCES cedentes (id) ON DELETE CASCADE,
-            UNIQUE(cedente_id)
-        )
-    ''')
-    
-    # NOVA TABELA: Notificações
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS notificacoes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cedente_id INTEGER,
-            tipo TEXT NOT NULL,
-            titulo TEXT NOT NULL,
-            mensagem TEXT NOT NULL,
-            lida BOOLEAN DEFAULT FALSE,
-            data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            data_vencimento DATE,
-            FOREIGN KEY (cedente_id) REFERENCES cedentes (id) ON DELETE CASCADE
-        )
-    ''')
-    
-    # Índices para melhor performance
-    conn.execute('CREATE INDEX IF NOT EXISTS idx_notificacoes_cedente_id ON notificacoes(cedente_id)')
-    conn.execute('CREATE INDEX IF NOT EXISTS idx_notificacoes_lida ON notificacoes(lida)')
-    conn.execute('CREATE INDEX IF NOT EXISTS idx_notificacoes_data_criacao ON notificacoes(data_criacao)')
-    
-    conn.commit()
-    conn.close()
-    print("✅ Banco de dados inicializado com sucesso!")
-
+    try:
+        # Tabela de cedentes
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS cedentes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome_razao_social TEXT NOT NULL,
+                cpf_cnpj TEXT NOT NULL,
+                contrato TEXT NOT NULL,
+                validade_contrato DATE NULL,
+                data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Tabela de documentos
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS documentos_cedente (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cedente_id INTEGER NOT NULL,
+                contrato_social BOOLEAN DEFAULT 0,
+                cartao_cnpj BOOLEAN DEFAULT 0,
+                faturamento_12meses BOOLEAN DEFAULT 0,
+                dre_balanco BOOLEAN DEFAULT 0,
+                cnh_rg_socios BOOLEAN DEFAULT 0,
+                ir_socios BOOLEAN DEFAULT 0,
+                comprovante_endereco BOOLEAN DEFAULT 0,
+                email BOOLEAN DEFAULT 0,
+                curva_abc BOOLEAN DEFAULT 0,
+                dados_bancarios BOOLEAN DEFAULT 0,
+                data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (cedente_id) REFERENCES cedentes (id) ON DELETE CASCADE,
+                UNIQUE(cedente_id)
+            )
+        ''')
+        
+        # Tabela de notificações
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS notificacoes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cedente_id INTEGER,
+                tipo TEXT NOT NULL,
+                titulo TEXT NOT NULL,
+                mensagem TEXT NOT NULL,
+                lida BOOLEAN DEFAULT FALSE,
+                data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                data_vencimento DATE,
+                FOREIGN KEY (cedente_id) REFERENCES cedentes (id) ON DELETE CASCADE
+            )
+        ''')
+        
+        # Índices para melhor performance
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_notificacoes_cedente_id ON notificacoes(cedente_id)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_notificacoes_lida ON notificacoes(lida)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_notificacoes_data_criacao ON notificacoes(data_criacao)')
+        
+        conn.commit()
+        print("✅ Banco de dados SQLite inicializado com sucesso!")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Erro ao inicializar banco SQLite: {e}")
+        return False
+    finally:
+        conn.close()
 
 def add_cedente(nome_razao_social, cpf_cnpj, contrato, validade_contrato=None):
     """Adiciona um novo cedente"""
     try:
         conn = get_db_connection()
+        if not conn:
+            return False
+            
         conn.execute('''
             INSERT INTO cedentes (nome_razao_social, cpf_cnpj, contrato, validade_contrato)
             VALUES (?, ?, ?, ?)
         ''', (nome_razao_social, cpf_cnpj, contrato, validade_contrato))
         
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
-        print(f"Erro ao adicionar cedente: {e}")
+        print(f"❌ Erro ao adicionar cedente: {e}")
         return False
-
+    finally:
+        if conn:
+            conn.close()
 
 def update_cedente(cedente_id, nome_razao_social, cpf_cnpj, contrato, validade_contrato=None):
     """Atualiza um cedente existente"""
     try:
         conn = get_db_connection()
+        if not conn:
+            return False
+            
         cursor = conn.execute('''
             UPDATE cedentes 
             SET nome_razao_social = ?, cpf_cnpj = ?, contrato = ?, 
@@ -145,59 +174,82 @@ def update_cedente(cedente_id, nome_razao_social, cpf_cnpj, contrato, validade_c
         ''', (nome_razao_social, cpf_cnpj, contrato, validade_contrato, cedente_id))
         
         conn.commit()
-        conn.close()
         return cursor.rowcount > 0
     except Exception as e:
-        print(f"Erro ao atualizar cedente: {e}")
+        print(f"❌ Erro ao atualizar cedente: {e}")
         return False
-
+    finally:
+        if conn:
+            conn.close()
 
 def get_all_cedentes():
     """Retorna todos os cedentes ORDENADOS POR NOME (A-Z)"""
-    conn = get_db_connection()
-    cedentes = conn.execute('''
-        SELECT id, nome_razao_social, cpf_cnpj, contrato, validade_contrato,
-               datetime(data_criacao) as data_criacao,
-               datetime(data_atualizacao) as data_atualizacao
-        FROM cedentes 
-        ORDER BY nome_razao_social ASC
-    ''').fetchall()
-    
-    conn.close()
-    return [dict(cedente) for cedente in cedentes]
-
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return []
+            
+        cedentes = conn.execute('''
+            SELECT id, nome_razao_social, cpf_cnpj, contrato, validade_contrato,
+                   datetime(data_criacao) as data_criacao,
+                   datetime(data_atualizacao) as data_atualizacao
+            FROM cedentes 
+            ORDER BY nome_razao_social ASC
+        ''').fetchall()
+        
+        return [dict(cedente) for cedente in cedentes]
+    except Exception as e:
+        print(f"❌ Erro ao buscar cedentes: {e}")
+        return []
+    finally:
+        if conn:
+            conn.close()
 
 def delete_cedente(cedente_id):
     """Exclui um cedente"""
     try:
         conn = get_db_connection()
+        if not conn:
+            return False
+            
         cursor = conn.execute('DELETE FROM cedentes WHERE id = ?', (cedente_id,))
         conn.commit()
-        conn.close()
         return cursor.rowcount > 0
     except Exception as e:
-        print(f"Erro ao excluir cedente: {e}")
+        print(f"❌ Erro ao excluir cedente: {e}")
         return False
-
+    finally:
+        if conn:
+            conn.close()
 
 def get_documentos_cedente(cedente_id):
     """Busca os documentos de um cedente"""
-    conn = get_db_connection()
-    documentos = conn.execute('''
-        SELECT * FROM documentos_cedente WHERE cedente_id = ?
-    ''', (cedente_id,)).fetchone()
-    conn.close()
-    
-    if documentos:
-        return dict(documentos)
-    return None
-
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return None
+            
+        documentos = conn.execute('''
+            SELECT * FROM documentos_cedente WHERE cedente_id = ?
+        ''', (cedente_id,)).fetchone()
+        
+        if documentos:
+            return dict(documentos)
+        return None
+    except Exception as e:
+        print(f"❌ Erro ao buscar documentos: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
 
 def salvar_documentos_cedente(cedente_id, documentos_data):
     """Salva ou atualiza os documentos de um cedente"""
     try:
         conn = get_db_connection()
-        
+        if not conn:
+            return False
+            
         # Verifica se já existe registro
         existente = conn.execute(
             'SELECT id FROM documentos_cedente WHERE cedente_id = ?',
@@ -249,43 +301,49 @@ def salvar_documentos_cedente(cedente_id, documentos_data):
             ))
         
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
-        print(f"Erro ao salvar documentos: {e}")
+        print(f"❌ Erro ao salvar documentos: {e}")
         return False
-
+    finally:
+        if conn:
+            conn.close()
 
 def verificar_documentos_completos(cedente_id):
     """Verifica se todos os documentos estão marcados"""
-    documentos = get_documentos_cedente(cedente_id)
-    if not documentos:
-        return False
-    
-    # Lista de todos os campos de documentos
-    campos_documentos = [
-        'contrato_social', 'cartao_cnpj', 'faturamento_12meses',
-        'dre_balanco', 'cnh_rg_socios', 'ir_socios',
-        'comprovante_endereco', 'email', 'curva_abc', 'dados_bancarios'
-    ]
-    
-    # Verifica se todos estão True
-    for campo in campos_documentos:
-        if not documentos.get(campo):
+    try:
+        documentos = get_documentos_cedente(cedente_id)
+        if not documentos:
             return False
-    
-    return True
+        
+        # Lista de todos os campos de documentos
+        campos_documentos = [
+            'contrato_social', 'cartao_cnpj', 'faturamento_12meses',
+            'dre_balanco', 'cnh_rg_socios', 'ir_socios',
+            'comprovante_endereco', 'email', 'curva_abc', 'dados_bancarios'
+        ]
+        
+        # Verifica se todos estão True
+        for campo in campos_documentos:
+            if not documentos.get(campo):
+                return False
+        
+        return True
+    except Exception as e:
+        print(f"❌ Erro ao verificar documentos completos: {e}")
+        return False
 
 # =============================================================================
-# NOVAS FUNÇÕES PARA NOTIFICAÇÕES
+# FUNÇÕES PARA NOTIFICAÇÕES
 # =============================================================================
-
 
 def criar_notificacao(cedente_id, tipo, titulo, mensagem, data_vencimento=None):
     """Cria uma nova notificação"""
     try:
         conn = get_db_connection()
-        
+        if not conn:
+            return None
+            
         cursor = conn.execute('''
             INSERT INTO notificacoes (cedente_id, tipo, titulo, mensagem, data_vencimento)
             VALUES (?, ?, ?, ?, ?)
@@ -293,20 +351,23 @@ def criar_notificacao(cedente_id, tipo, titulo, mensagem, data_vencimento=None):
         
         conn.commit()
         notificacao_id = cursor.lastrowid
-        conn.close()
         
         print(f"✅ Notificação criada: {titulo}")
         return notificacao_id
     except Exception as e:
         print(f"❌ Erro ao criar notificação: {e}")
         return None
-
+    finally:
+        if conn:
+            conn.close()
 
 def get_notificacoes_nao_lidas():
     """Busca todas as notificações não lidas"""
     try:
         conn = get_db_connection()
-        
+        if not conn:
+            return []
+            
         cursor = conn.execute('''
             SELECT n.*, c.nome_razao_social 
             FROM notificacoes n 
@@ -329,59 +390,68 @@ def get_notificacoes_nao_lidas():
                 'cedente_nome': row[8]
             })
         
-        conn.close()
         return notificacoes
     except Exception as e:
         print(f"❌ Erro ao buscar notificações: {e}")
         return []
-
+    finally:
+        if conn:
+            conn.close()
 
 def marcar_notificacao_como_lida(notificacao_id):
     """Marca uma notificação como lida"""
     try:
         conn = get_db_connection()
-        
+        if not conn:
+            return False
+            
         cursor = conn.execute('''
             UPDATE notificacoes SET lida = TRUE WHERE id = ?
         ''', (notificacao_id,))
         
         conn.commit()
         success = cursor.rowcount > 0
-        conn.close()
-        
         return success
     except Exception as e:
         print(f"❌ Erro ao marcar notificação como lida: {e}")
         return False
-
+    finally:
+        if conn:
+            conn.close()
 
 def marcar_todas_notificacoes_como_lidas():
     """Marca todas as notificações como lidas"""
     try:
         conn = get_db_connection()
-        
+        if not conn:
+            return False
+            
         cursor = conn.execute('UPDATE notificacoes SET lida = TRUE WHERE lida = FALSE')
         
         conn.commit()
         success = cursor.rowcount > 0
-        conn.close()
-        
         return success
     except Exception as e:
         print(f"❌ Erro ao marcar todas notificações como lidas: {e}")
         return False
-
+    finally:
+        if conn:
+            conn.close()
 
 def get_total_notificacoes_nao_lidas():
     """Retorna o total de notificações não lidas"""
     try:
         conn = get_db_connection()
-        
+        if not conn:
+            return 0
+            
         cursor = conn.execute('SELECT COUNT(*) FROM notificacoes WHERE lida = FALSE')
         total = cursor.fetchone()[0]
         
-        conn.close()
         return total
     except Exception as e:
         print(f"❌ Erro ao contar notificações: {e}")
         return 0
+    finally:
+        if conn:
+            conn.close()
