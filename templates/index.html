@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestão de Cedentes - Gold Credit SA</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Navbar Personalizada -->
+    <nav class="navbar navbar-highlight">
+      <div class="navbar-container">
+        <div class="navbar-brand">
+          <div class="navbar-logo">GC</div>
+          <div>
+            <h1 class="navbar-title">Gestão de Cedentes</h1>
+            <p class="navbar-subtitle">Gold Credit SA</p>
+          </div>
+        </div>
+
+        <div class="navbar-user-dropdown">
+          <button class="navbar-btn user-toggle">
+            <i class="fas fa-user"></i>
+            {{ current_user.name }}
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="user-dropdown-menu">
+            <a href="{{ url_for('auth.logout') }}" class="dropdown-item logout">
+              <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <header>
+        <h1>
+          <i class="fas fa-file-contract"></i> Gestão de Cedentes - Gold Credit
+          SA
+        </h1>
+        <!-- Ícone de Notificações -->
+        <div class="notifications-container">
+          <div
+            class="notifications-icon"
+            onclick="manager.abrirModalNotificacoes()"
+          >
+            <i class="fas fa-bell"></i>
+            <span class="notifications-badge" id="notifications-badge">0</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="dashboard">
+        <!-- Dashboard de Estatísticas Expandido -->
+        <div class="dashboard-stats">
+          <div class="stat-card">
+            <div class="stat-icon total">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-cedentes-stat">0</h3>
+              <p>Total de Cedentes</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon assinado">
+              <i class="fas fa-file-signature"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="assinados-stat">0</h3>
+              <p>Assinados Manualmente</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon enviado">
+              <i class="fas fa-paper-plane"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="enviados-stat">0</h3>
+              <p>Levou p/ Assinar</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon renovar">
+              <i class="fas fa-sync-alt"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="renovar-stat">0</h3>
+              <p>Precisa Renovar</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon atencao">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="atencao-stat">0</h3>
+              <p>Pontos de Atenção</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon sem-assinatura">
+              <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="sem-assinatura-stat">0</h3>
+              <p>Sem Assinatura</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon faltam-assinar">
+              <i class="fas fa-edit"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="faltam-assinar-stat">0</h3>
+              <p>Faltam Assinar</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon avisados">
+              <i class="fas fa-bell"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="avisados-stat">0</h3>
+              <p>Avisados Renovação</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ações Rápidas no Topo -->
+        <div class="actions-row">
+          <!-- Adicionar Cedente -->
+          <div class="card quick-action">
+            <h2><i class="fas fa-plus-circle"></i> Novo Cedente</h2>
+            <form id="form-cedente" class="compact-form">
+              <div class="form-group">
+                <input
+                  type="text"
+                  id="nome"
+                  placeholder="Nome/Razão Social"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <input
+                  type="text"
+                  id="cpf_cnpj"
+                  placeholder="CPF/CNPJ"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <input
+                  type="date"
+                  id="validade_contrato"
+                  placeholder="Validade do Contrato"
+                />
+              </div>
+              <div class="form-group">
+                <select id="contrato" required>
+                  <option value="">Selecione o status do contrato</option>
+                  <option value="pontos_atencao">Pontos de Atenção</option>
+                  <option value="assinado_manual">
+                    Contrato assinado manualmente
+                  </option>
+                  <option value="sem_assinatura">
+                    Contrato sem assinatura manual e digital - Não entrei em
+                    contato
+                  </option>
+                  <option value="precisa_renovar">
+                    Contrato precisa ser renovado - Assinado manualmente - Não
+                    entrei em contato
+                  </option>
+                  <option value="faltam_assinar">
+                    Contratos impressos que faltam assinar
+                  </option>
+                  <option value="avisados_renovacao">
+                    Cedentes que já foram avisados da renovação
+                  </option>
+                  <option value="levou_contrato">
+                    Levou o contrato para assinar
+                  </option>
+                </select>
+              </div>
+              <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i> Salvar
+              </button>
+            </form>
+          </div>
+
+          <!-- Importar Excel -->
+          <div class="card quick-action">
+            <h2><i class="fas fa-file-import"></i> Importar Excel</h2>
+            <form
+              id="form-importar"
+              enctype="multipart/form-data"
+              class="compact-form"
+            >
+              <div class="form-group">
+                <input
+                  type="file"
+                  id="file-excel"
+                  accept=".xlsx,.xls"
+                  required
+                />
+                <small>Arquivo Excel com dados dos cedentes</small>
+              </div>
+              <div class="form-buttons-row">
+                <button type="submit" class="btn-secondary">
+                  <i class="fas fa-upload"></i> Importar
+                </button>
+                <br />
+                <button type="button" id="btn-excluir-todos" class="btn-danger">
+                  <i class="fas fa-trash-alt"></i> Excluir Todos
+                </button>
+              </div>
+            </form>
+            <div id="import-result"></div>
+          </div>
+        </div>
+
+        <!-- Backup de Dados -->
+        <div class="card quick-action">
+          <h2><i class="fas fa-database"></i> Backup de Dados</h2>
+          <div class="compact-form">
+            <div class="form-group">
+              <button
+                type="button"
+                class="btn-secondary"
+                onclick="manager.criarBackup()"
+                style="width: 100%; margin-bottom: 10px"
+              >
+                <i class="fas fa-save"></i> Criar Backup Agora
+              </button>
+            </div>
+            <div class="form-group">
+              <button
+                type="button"
+                class="btn-secondary"
+                onclick="manager.abrirModalBackups()"
+                style="width: 100%"
+              >
+                <i class="fas fa-list"></i> Gerenciar Backups
+              </button>
+            </div>
+            <div id="backup-status" style="margin-top: 10px"></div>
+          </div>
+        </div>
+
+        <!-- Exportação de Dados -->
+        <div class="card quick-action">
+          <h2><i class="fas fa-file-export"></i> Exportar Dados</h2>
+          <div class="compact-form">
+            <div class="form-group">
+              <button
+                type="button"
+                class="btn-secondary"
+                onclick="manager.abrirModalExportacao()"
+                style="width: 100%; margin-bottom: 10px"
+              >
+                <i class="fas fa-file-excel"></i> Exportar para Excel
+              </button>
+            </div>
+            <div class="form-group">
+              <button
+                type="button"
+                class="btn-secondary"
+                onclick="manager.exportarExcelCompleto()"
+                style="width: 100%"
+              >
+                <i class="fas fa-download"></i> Exportar Tudo (Excel)
+              </button>
+            </div>
+            <div id="export-status" style="margin-top: 10px"></div>
+          </div>
+        </div>
+
+        <!-- Lista de Cedentes com Filtros Integrados -->
+        <div class="card main-table">
+          <div class="table-header">
+            <h2><i class="fas fa-users"></i> Lista de Cedentes</h2>
+
+            <!-- Filtros Integrados -->
+            <div class="table-filters">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input
+                  type="text"
+                  id="search"
+                  placeholder="Buscar por nome ou CPF/CNPJ..."
+                />
+              </div>
+              <select id="status-filter">
+                <option value="">Todos os status</option>
+                <option value="pontos_atencao">Pontos de Atenção</option>
+                <option value="assinado_manual">
+                  Contrato assinado manualmente
+                </option>
+                <option value="sem_assinatura">Contrato sem assinatura</option>
+                <option value="precisa_renovar">Precisa renovar</option>
+                <option value="faltam_assinar">Faltam assinar</option>
+                <option value="avisados_renovacao">
+                  Avisados da renovação
+                </option>
+                <option value="levou_contrato">Levou para assinar</option>
+              </select>
+              <div class="table-info" id="total-cedentes-filtro">
+                0 cedentes
+              </div>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table id="tabela-cedentes">
+              <thead>
+                <tr>
+                  <th>Nome/Razão Social</th>
+                  <th>CPF/CNPJ</th>
+                  <th>Status</th>
+                  <th>Validade do Contrato</th>
+                  <!-- NOVA COLUNA -->
+                  <th class="actions-header">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="corpo-tabela">
+                <!-- Dados carregados via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginação -->
+          <div class="pagination" id="pagination-controls">
+            <!-- Controles inseridos via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para Edição -->
+    <div id="modal-editar" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-edit"></i> Editar Cedente</h2>
+        <form id="form-editar">
+          <input type="hidden" id="edit-id" />
+          <div class="form-group">
+            <label for="edit-nome">Nome/Razão Social</label>
+            <input
+              type="text"
+              id="edit-nome"
+              placeholder="Digite o nome ou razão social"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="edit-cpf_cnpj">CPF/CNPJ</label>
+            <input
+              type="text"
+              id="edit-cpf_cnpj"
+              placeholder="Digite o CPF ou CNPJ"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="edit-validade_contrato">Validade do Contrato</label>
+            <input
+              type="date"
+              id="edit-validade_contrato"
+              placeholder="Data de validade do contrato"
+            />
+          </div>
+          <div class="form-group">
+            <label for="edit-contrato">Status do Contrato</label>
+            <select id="edit-contrato" required>
+              <option value="">Selecione o status do contrato</option>
+              <option value="pontos_atencao">Pontos de Atenção</option>
+              <option value="assinado_manual">
+                Contrato assinado manualmente
+              </option>
+              <option value="sem_assinatura">
+                Contrato sem assinatura manual e digital
+              </option>
+              <option value="precisa_renovar">
+                Contrato precisa ser renovado
+              </option>
+              <option value="faltam_assinar">
+                Contratos impressos que faltam assinar
+              </option>
+              <option value="avisados_renovacao">
+                Cedentes avisados da renovação
+              </option>
+              <option value="levou_contrato">
+                Levou o contrato para assinar
+              </option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-sync-alt"></i> Atualizar Cedente
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal para Conferência de Documentos -->
+    <div id="modal-documentos" class="modal">
+      <div class="modal-content" style="max-width: 600px">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-file-alt"></i> Conferência de Documentos</h2>
+        <div id="documentos-content">
+          <div class="documentos-header">
+            <h3 id="documentos-cedente-nome"></h3>
+            <div class="status-geral">
+              <span id="status-documentos" class="status-pendente">
+                <i class="fas fa-times-circle"></i> Documentos Incompletos
+              </span>
+            </div>
+          </div>
+
+          <form id="form-documentos" class="documentos-form">
+            <input type="hidden" id="documentos-cedente-id" />
+
+            <div class="documentos-categoria">
+              <h4><i class="fas fa-building"></i> Documentos Cadastrais PJ</h4>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="contrato_social"
+                    id="doc-contrato_social"
+                  />
+                  <span class="checkmark"></span>
+                  Contrato social
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="cartao_cnpj"
+                    id="doc-cartao_cnpj"
+                  />
+                  <span class="checkmark"></span>
+                  Cartão CNPJ
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="faturamento_12meses"
+                    id="doc-faturamento_12meses"
+                  />
+                  <span class="checkmark"></span>
+                  Faturamento últimos 12 meses
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="dre_balanco"
+                    id="doc-dre_balanco"
+                  />
+                  <span class="checkmark"></span>
+                  DRE / Balanço
+                </label>
+              </div>
+            </div>
+
+            <div class="documentos-categoria">
+              <h4><i class="fas fa-user-tie"></i> Documentos dos Sócios</h4>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="cnh_rg_socios"
+                    id="doc-cnh_rg_socios"
+                  />
+                  <span class="checkmark"></span>
+                  CNH ou RG sócios
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="ir_socios" id="doc-ir_socios" />
+                  <span class="checkmark"></span>
+                  IR dos sócios
+                </label>
+              </div>
+            </div>
+
+            <div class="documentos-categoria">
+              <h4><i class="fas fa-home"></i> Dados de Contato</h4>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="comprovante_endereco"
+                    id="doc-comprovante_endereco"
+                  />
+                  <span class="checkmark"></span>
+                  Comprovante de endereço residência e empresa atualizado
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="email" id="doc-email" />
+                  <span class="checkmark"></span>
+                  E-mail
+                </label>
+              </div>
+            </div>
+
+            <div class="documentos-categoria">
+              <h4><i class="fas fa-chart-line"></i> Dados Financeiros</h4>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="curva_abc" id="doc-curva_abc" />
+                  <span class="checkmark"></span>
+                  Curva ABC
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="dados_bancarios"
+                    id="doc-dados_bancarios"
+                  />
+                  <span class="checkmark"></span>
+                  Dados Bancários (Tipo da conta, n° do banco, Agência, Conta,
+                  Favorecido, CNPJ/CPF, Chave pix)
+                </label>
+              </div>
+            </div>
+
+            <div class="form-buttons-row">
+              <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i> Salvar Conferência
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmação para Excluir -->
+    <div id="modal-excluir" class="modal confirmation-modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h2>
+        <div class="confirmation-content">
+          <div class="confirmation-icon">
+            <i class="fas fa-trash-alt"></i>
+          </div>
+          <h3 id="confirmacao-titulo">
+            Tem certeza que deseja excluir este cedente?
+          </h3>
+          <p id="confirmacao-descricao">
+            Esta ação não pode ser desfeita. Todos os dados do cedente serão
+            permanentemente removidos do sistema.
+          </p>
+          <div class="confirmation-buttons">
+            <button type="button" class="btn-confirm-no">
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button type="button" class="btn-confirm-yes">
+              <i class="fas fa-trash-alt"></i> Excluir
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Exportação -->
+    <div id="modal-exportacao" class="modal">
+      <div class="modal-content" style="max-width: 600px">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-file-export"></i> Exportar Dados</h2>
+
+        <div class="export-content" style="padding: 20px">
+          <div class="export-options">
+            <h3>Opções de Exportação</h3>
+
+            <div class="form-group">
+              <label for="export-tipo">Tipo de Exportação:</label>
+              <select id="export-tipo" class="export-select">
+                <option value="filtrado">Dados Filtrados Atuais</option>
+                <option value="completo">Todos os Cedentes</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="export-colunas">Colunas a Incluir:</label>
+              <div class="checkbox-group-columns">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="export-colunas"
+                    value="nome"
+                    checked
+                  />
+                  <span class="checkmark"></span>
+                  Nome/Razão Social
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="export-colunas"
+                    value="cpf_cnpj"
+                    checked
+                  />
+                  <span class="checkmark"></span>
+                  CPF/CNPJ
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="export-colunas"
+                    value="contrato"
+                    checked
+                  />
+                  <span class="checkmark"></span>
+                  Status do Contrato
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="export-colunas"
+                    value="validade"
+                    checked
+                  />
+                  <span class="checkmark"></span>
+                  Validade do Contrato
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="export-colunas"
+                    value="documentos"
+                    checked
+                  />
+                  <span class="checkmark"></span>
+                  Status Documentos
+                </label>
+              </div>
+            </div>
+
+            <div class="export-preview">
+              <h4>Pré-visualização:</h4>
+              <div class="preview-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>CPF/CNPJ</th>
+                      <th>Status</th>
+                      <th>Documentos</th>
+                    </tr>
+                  </thead>
+                  <tbody id="export-preview-body">
+                    <!-- Pré-visualização será carregada aqui -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-buttons-row" style="margin-top: 20px">
+            <button
+              type="button"
+              class="btn-secondary"
+              onclick="manager.fecharModalExportacao()"
+            >
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn-primary"
+              onclick="manager.executarExportacao()"
+            >
+              <i class="fas fa-download"></i> Exportar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Gerenciamento de Backups -->
+    <div id="modal-backups" class="modal">
+      <div class="modal-content" style="max-width: 800px">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-database"></i> Gerenciar Backups</h2>
+
+        <div class="backup-content" style="padding: 20px">
+          <!-- Estatísticas -->
+          <div
+            class="backup-stats"
+            style="
+              background: var(--surface-secondary);
+              padding: 15px;
+              border-radius: 10px;
+              margin-bottom: 20px;
+            "
+          >
+            <h3>Estatísticas</h3>
+            <div id="backup-estatisticas">Carregando...</div>
+          </div>
+
+          <!-- Lista de Backups -->
+          <div class="backup-list">
+            <h3>Backups Disponíveis</h3>
+            <div id="lista-backups" style="max-height: 400px; overflow-y: auto">
+              Carregando backups...
+            </div>
+          </div>
+
+          <div class="form-buttons-row" style="margin-top: 20px">
+            <button
+              type="button"
+              class="btn-secondary"
+              onclick="manager.fecharModalBackups()"
+            >
+              <i class="fas fa-times"></i> Fechar
+            </button>
+            <button
+              type="button"
+              class="btn-primary"
+              onclick="manager.criarBackup()"
+            >
+              <i class="fas fa-plus"></i> Novo Backup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Notificações -->
+    <div id="modal-notificacoes" class="modal">
+      <div class="modal-content" style="max-width: 600px">
+        <span class="close">&times;</span>
+        <h2><i class="fas fa-bell"></i> Notificações</h2>
+
+        <div class="notifications-content">
+          <div class="notifications-header">
+            <div class="notifications-stats">
+              <span id="notifications-total">0 notificações não lidas</span>
+            </div>
+            <button
+              class="btn-secondary"
+              onclick="manager.marcarTodasNotificacoesLidas()"
+            >
+              <i class="fas fa-check-double"></i> Marcar Todas como Lidas
+            </button>
+          </div>
+
+          <div class="notifications-list" id="notifications-list">
+            <!-- Notificações serão carregadas aqui -->
+            <div class="empty-state">
+              <i class="fas fa-bell-slash"></i>
+              <h3>Nenhuma notificação</h3>
+              <p>Você está em dia com tudo!</p>
+            </div>
+          </div>
+
+          <div class="notifications-actions">
+            <button
+              class="btn-secondary"
+              onclick="manager.executarVerificacaoManual()"
+            >
+              <i class="fas fa-sync-alt"></i> Verificar Agora
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
