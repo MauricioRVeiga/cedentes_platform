@@ -1,0 +1,16 @@
+click==8.1.7
+et-xmlfile==2.0.0
+Flask==2.3.3
+Flask-Login==0.6.3
+Flask-SQLAlchemy==3.0.5
+numpy==2.3.4
+openpyxl==3.1.2
+pandas==2.3.3
+python-dateutil==2.9.0.post0
+pytz==2025.2
+six==1.16.0
+tzdata==2025.2
+Werkzeug==2.3.7
+# Apenas gunicorn para Railway (psycopg2 será instalado automaticamente na Railway)
+gunicorn==21.2.0
+python-dotenv==1.0.0
