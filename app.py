@@ -42,7 +42,9 @@ def create_app():
             database_url = database_url.replace('postgres://', 'postgresql://', 1)
         app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cedentes.db'
+        # Usar SQLite com o caminho personalizado do Railway
+        db_path = os.environ.get('CEDENTES_DB_PATH', 'instance/cedentes.db')
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -56,6 +58,7 @@ def create_app():
     # DEBUG: Verificar configurações
     print(f"🔧 Configuração do Banco: {app.config['SQLALCHEMY_DATABASE_URI'][:50]}...")
     print(f"🔧 Railway Environment: {'RAILWAY_ENVIRONMENT' in os.environ}")
+    print(f"🔧 Usando PostgreSQL: {'postgresql' in app.config['SQLALCHEMY_DATABASE_URI']}")
     
     # Inicializar extensões
     db.init_app(app)
@@ -88,6 +91,7 @@ def create_app():
         return jsonify({
             'status': 'running',
             'database': db_status,
+            'database_type': 'PostgreSQL',
             'timestamp': datetime.now().isoformat()
         })
     
@@ -95,7 +99,7 @@ def create_app():
     with app.app_context():
         try:
             # Aguardar banco ficar pronto (apenas em produção com PostgreSQL)
-            if 'RAILWAY_ENVIRONMENT' in os.environ and 'postgresql' in app.config['SQLALCHEMY_DATABASE_URI']:
+            if 'postgresql' in app.config['SQLALCHEMY_DATABASE_URI']:
                 wait_for_database(app)
             
             # Criar tabelas do SQLAlchemy (autenticação)
@@ -161,6 +165,9 @@ def create_app():
     if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
         backup_thread = threading.Thread(target=backup_automatico_diario, daemon=True)
         backup_thread.start()
+        print("✅ Sistema de backup automático ativado (SQLite)")
+    else:
+        print("✅ Sistema de backup automático desativado (PostgreSQL)")
 
     # =============================================================================
     # SISTEMA DE VERIFICAÇÃO AUTOMÁTICA DE NOTIFICAÇÕES
@@ -282,6 +289,7 @@ def create_app():
     # Iniciar thread de verificações automáticas em background
     verificacoes_thread = threading.Thread(target=executar_verificacoes_automaticas, daemon=True)
     verificacoes_thread.start()
+    print("✅ Sistema de verificações automáticas ativado")
 
     # =============================================================================
     # ROTAS PRINCIPAIS (PROTEGIDAS)
