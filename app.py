@@ -688,6 +688,10 @@ def create_app():
 
 app = create_app()
 
+# NO FINAL do app.py, ANTES do if __name__ == '__main__':
+print("✅ Todas as dependências carregadas com sucesso!")
+print(f"✅ Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
