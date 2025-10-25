@@ -1,191 +1,66 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - Sistema Cedentes</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .register-container {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-        
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .logo h1 {
-            color: #333;
-            font-size: 24px;
-            font-weight: 600;
-        }
-        
-        .alert {
-            padding: 12px;
-            margin: 15px 0;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        .error {
-            background: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef5350;
-        }
-        
-        .success {
-            background: #e8f5e8;
-            color: #2e7d32;
-            border: 1px solid #4caf50;
-        }
-        
-        .domain-warning {
-            background: #fff3e0;
-            color: #e65100;
-            border: 1px solid #ff9800;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 12px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: 500;
-        }
-        
-        input[type="email"],
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e1e1;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-        
-        input[type="email"]:focus,
-        input[type="text"]:focus,
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .btn-register {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-bottom: 15px;
-        }
-        
-        .btn-register:hover {
-            transform: translateY(-2px);
-        }
-        
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: transparent;
-            color: #667eea;
-            border: 2px solid #667eea;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: block;
-            text-align: center;
-        }
-        
-        .btn-login:hover {
-            background: #667eea;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <div class="register-container">
-        <div class="logo">
-            <h1>📝 Criar Conta</h1>
-            <p style="color: #666; margin-top: 5px;">Cadastre-se no Sistema Cedentes</p>
-        </div>
-        
-        <div class="domain-warning">
-            <strong>⚠️ Domínio Restrito</strong>
-            <p style="margin-top: 5px;">Apenas emails @goldcreditsa.com.br são permitidos</p>
-        </div>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert {{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <form method="POST">
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" placeholder="seu.email@goldcreditsa.com.br" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="name">Nome Completo:</label>
-                <input type="text" id="name" name="name" placeholder="Seu nome completo" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Senha:</label>
-                <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="confirm_password">Confirmar Senha:</label>
-                <input type="password" id="confirm_password" name="confirm_password" placeholder="Digite a senha novamente" required>
-            </div>
-            
-            <button type="submit" class="btn-register">Cadastrar</button>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro - Gold Credit S/A</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/auth.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="auth-container">
+      <div class="auth-box">
+        <h2><i class="fas fa-user-plus"></i> Cadastro</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %} {% endif %} {% endwith %}
+
+        <form method="POST" class="auth-form">
+          <div class="form-group">
+            <i class="fas fa-envelope"></i>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email @goldcreditsa.com.br"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <i class="fas fa-user"></i>
+            <input
+              type="text"
+              name="name"
+              placeholder="Nome Completo"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <i class="fas fa-key"></i>
+            <input
+              type="password"
+              name="password"
+              placeholder="Senha"
+              required
+            />
+          </div>
+          <button type="submit">
+            <i class="fas fa-user-plus"></i> Cadastrar
+          </button>
         </form>
-        
-        <a href="{{ url_for('auth.login') }}" class="btn-login">
-            ← Voltar para o Login
-        </a>
+        <div class="auth-links">
+          <a href="{{ url_for('login') }}">
+            <i class="fas fa-sign-in-alt"></i> Voltar para Login
+          </a>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

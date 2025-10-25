@@ -48,6 +48,10 @@ gunicorn==21.2.0
 # Produção
 whitenoise==6.6.0
 
+# Database Migration
+Flask-Migrate==4.0.5
+alembic==1.13.1
+
 # Development (optional - comment out in production)
 # Flask-DebugToolbar==0.14.1
 # pytest==7.4.3

@@ -27,6 +27,8 @@ login_manager.login_view = 'login'
 
 
 class User(UserMixin, db.Model):
+    __tablename__ = 'users'  # Definir nome explícito da tabela
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
@@ -68,49 +70,37 @@ def login():
             flash('Login realizado!', 'success')
             return redirect(url_for('index'))
         else:
-            flash('Erro no login', 'error')
+            flash('Email ou senha inválidos', 'error')
     
-    return '''
-    <form method="POST">
-        <input type="email" name="email" placeholder="Email" required><br>
-        <input type="password" name="password" placeholder="Senha" required><br>
-        <button type="submit">Login</button>
-    </form>
-    <a href="/register">Cadastrar</a>
-    '''
+    return render_template('auth/login.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
     if request.method == 'POST':
         email = request.form.get('email')
         name = request.form.get('name')
         password = request.form.get('password')
         
-        # Validar domínio do email
         if not re.match(r'^[a-zA-Z0-9._%+-]+@goldcreditsa\.com\.br$', email):
             flash('Email deve ser do domínio @goldcreditsa.com.br', 'error')
-            return redirect(url_for('register'))
+            return render_template('auth/register.html')
             
         if User.query.filter_by(email=email).first():
             flash('Email já existe', 'error')
-        else:
-            user = User(email=email, name=name)
-            user.set_password(password)
-            db.session.add(user)
-            db.session.commit()
-            flash('Cadastrado! Faça login.', 'success')
-            return redirect(url_for('login'))
+            return render_template('auth/register.html')
+            
+        user = User(email=email, name=name)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        flash('Cadastro realizado! Faça login.', 'success')
+        return redirect(url_for('login'))
     
-    return '''
-    <form method="POST">
-        <input type="email" name="email" placeholder="Email" required><br>
-        <input type="text" name="name" placeholder="Nome" required><br>
-        <input type="password" name="password" placeholder="Senha" required><br>
-        <button type="submit">Cadastrar</button>
-    </form>
-    <a href="/login">Login</a>
-    '''
+    return render_template('auth/register.html')
 
 
 @app.route('/logout')
@@ -150,14 +140,16 @@ def health():
 
 if __name__ == '__main__':
     with app.app_context():
+        # Criar todas as tabelas
         db.create_all()
+        
         # Criar usuário admin se não existir
-        if not User.query.filter_by(email='admin@test.com').first():
-            admin = User(email='admin@test.com', name='Admin')
-            admin.set_password('123456')
+        if not User.query.filter_by(email='admin@goldcreditsa.com.br').first():
+            admin = User(email='admin@goldcreditsa.com.br', name='Admin')
+            admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
-            print("✅ Usuário admin criado: admin@test.com / 123456")
+            print("✅ Usuário admin criado")
     
     port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
