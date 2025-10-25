@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV 'C:\Users\mauri\Documents\cedentes_platform\venv'
+set -gx VIRTUAL_ENV 'C:\Users\Mauricio\Downloads\FATEC\cedentes_platform\venv'
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"Scripts $PATH

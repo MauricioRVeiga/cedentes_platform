@@ -1,0 +1,151 @@
+# ============================================
+# .gitignore - Gold Credit S/A
+# ============================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Flask
+instance/
+.webassets-cache
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment Variables (CRÍTICO!)
+.env
+.env.local
+.env.*.local
+.flaskenv
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+cedentes.db
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Backups
+backups/
+*.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# ============================================
+# .env.example - Template de Configuração
+# ============================================
+# 
+# Copie este arquivo para .env e preencha com seus valores
+# NUNCA commite o arquivo .env real!
+#
+
+# Flask Configuration
+SECRET_KEY=sua-chave-secreta-muito-longa-e-aleatoria-aqui
+FLASK_APP=app.py
+FLASK_ENV=development
+FLASK_DEBUG=True
+
+# Database (escolha um)
+# Para SQLite (desenvolvimento):
+CEDENTES_DB_PATH=instance/cedentes.db
+
+# Para PostgreSQL (produção):
+# DATABASE_URL=postgresql://usuario:senha@localhost:5432/goldcredit
+
+# Admin User (primeiro acesso)
+ADMIN_EMAIL=admin@goldcreditsa.com.br
+ADMIN_PASSWORD=SuaSenhaSeguraAqui2025!
+
+# Server
+PORT=5000
+
+# Session (produção)
+SESSION_COOKIE_SECURE=False
+SESSION_COOKIE_HTTPONLY=True
+SESSION_COOKIE_SAMESITE=Lax
+
+# Logging
+LOG_LEVEL=INFO
+
+# Backup
+BACKUP_DIR=backups
+BACKUP_RETENTION_DAYS=30
+
+# ============================================
+# INSTRUÇÕES DE USO:
+# ============================================
+# 
+# 1. Copie este arquivo:
+#    cp .env.example .env
+#
+# 2. Gere uma SECRET_KEY segura:
+#    python -c "import secrets; print(secrets.token_hex(32))"
+#
+# 3. Configure suas credenciais
+#
+# 4. NUNCA commite o arquivo .env real!
+#

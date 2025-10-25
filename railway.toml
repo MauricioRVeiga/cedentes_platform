@@ -1,8 +1,13 @@
 [build]
 builder = "nixpacks"
+buildCommand = "pip install -r requirements.txt"
 
 [deploy]
-startCommand = "gunicorn app:app"
+startCommand = "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
 
-[env]
-SECRET_KEY = "8adfab3943ad08f2aac6952d4b529cedecb4b7398ffc4e8b552a081179e5a4fd"
+[healthcheck]
+path = "/health"
+interval = 30
+timeout = 10

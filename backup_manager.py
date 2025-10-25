@@ -15,8 +15,17 @@ logging.basicConfig(
 )
 
 class BackupManager:
-    def __init__(self, db_path='instance/cedentes.db', backup_dir='backups'):
-        self.db_path = db_path
+    def __init__(self, db_path=None, backup_dir='backups'):
+        # Determinar caminho do banco automaticamente
+        if db_path is None:
+            import platform
+            if platform.system() == 'Windows':
+                self.db_path = 'instance/cedentes.db'
+            else:
+                self.db_path = '/tmp/cedentes.db'
+        else:
+            self.db_path = db_path
+            
         self.backup_dir = backup_dir
         self._ensure_backup_dir()
     
