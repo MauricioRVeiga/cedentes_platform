@@ -18,6 +18,9 @@ if __name__ != '__main__':
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
 
+# Configurar WSGI app
+application = app
+
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
