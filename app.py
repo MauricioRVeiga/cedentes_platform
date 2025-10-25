@@ -5,6 +5,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import re
 from config import Config
+from urllib.parse import urlparse
+import psycopg2
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -115,6 +117,34 @@ def logout():
     return redirect(url_for('login'))
 
 
+# Adicionar nova rota de healthcheck
+@app.route('/health')
+def health():
+    try:
+        # Verificar conexão com o banco
+        if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql'):
+            url = urlparse(app.config['SQLALCHEMY_DATABASE_URI'])
+            conn = psycopg2.connect(
+                dbname=url.path[1:],
+                user=url.username,
+                password=url.password,
+                host=url.hostname,
+                port=url.port
+            )
+            conn.close()
+        
+        return jsonify({
+            "status": "healthy",
+            "message": "Service is running"
+        }), 200
+    except Exception as e:
+        app.logger.error(f"Healthcheck failed: {str(e)}")
+        return jsonify({
+            "status": "unhealthy",
+            "message": str(e)
+        }), 500
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
@@ -126,5 +156,5 @@ if __name__ == '__main__':
             db.session.commit()
             print("✅ Usuário admin criado: admin@test.com / 123456")
     
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)

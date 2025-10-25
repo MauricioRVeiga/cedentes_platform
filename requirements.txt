@@ -40,6 +40,14 @@ click==8.1.7
 six==1.16.0
 tzdata==2023.4
 
+# Monitoramento e Saúde
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+gunicorn==21.2.0
+
+# Produção
+whitenoise==6.6.0
+
 # Development (optional - comment out in production)
 # Flask-DebugToolbar==0.14.1
 # pytest==7.4.3
