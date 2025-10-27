@@ -6,6 +6,7 @@ router.get("/login", (req, res) => {
   res.render("auth/login", {
     title: "Login",
     messages: req.flash(),
+    layout: false, // não usar o layout global (evita navbar)
   });
 });
 
@@ -13,6 +14,7 @@ router.get("/register", (req, res) => {
   res.render("auth/register", {
     title: "Registro",
     messages: req.flash(),
+    layout: false, // não usar o layout global (evita navbar)
   });
 });
 

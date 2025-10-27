@@ -22,11 +22,17 @@ const upload = multer({
   },
 });
 
+// Rotas principais
 router.post(
   "/upload",
   upload.single("planilha"),
   cedenteController.uploadPlanilha
 );
 router.get("/listar", cedenteController.listarCedentes);
+router.post("/novo", cedenteController.adicionarCedente);
+router.get("/:id", cedenteController.buscarCedente);
+router.put("/:id", cedenteController.atualizarCedente);
+router.delete("/:id", cedenteController.excluirCedente);
+router.delete("/", cedenteController.excluirTodos);
 
 module.exports = router;

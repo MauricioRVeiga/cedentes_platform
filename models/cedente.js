@@ -12,8 +12,15 @@ const Cedente = sequelize.define("Cedente", {
     unique: true,
   },
   status: {
-    type: DataTypes.ENUM("Ativo", "Inativo", "Pendente"),
-    defaultValue: "Pendente",
+    type: DataTypes.ENUM([
+      "CONTRATO ASSINADO MANUALMENTE",
+      "CONTRATO SEM ASSINATURA MANUAL E DIGITAL",
+      "CONTRATO PRECISA SER RENOVADO",
+      "CONTRATOS IMPRESSOS QUE FALTAM ASSINAR",
+      "CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO",
+      "LEVOU O CONTRATO PARA ASSINAR",
+    ]),
+    defaultValue: "CONTRATO SEM ASSINATURA MANUAL E DIGITAL",
   },
   data_validade: {
     type: DataTypes.DATE,

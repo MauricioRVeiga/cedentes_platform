@@ -3,12 +3,20 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const path = require("path");
 const multer = require("multer");
+const expressLayouts = require("express-ejs-layouts");
 
 const app = express();
+
+// Importar instância do Sequelize e modelos para garantir que as tabelas sejam registradas
+const sequelize = require("./config/database");
+require("./models/cedente");
 
 // Configurações básicas
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.set("layout", "layouts/main");
+app.use(expressLayouts);
+
 app.use(express.static(path.join(__dirname, "public")));
 
 // Configurações do express
@@ -63,15 +71,17 @@ const upload = multer({
 // Importar rotas de autenticação
 const authRoutes = require("./routes/auth");
 const dashboardRoutes = require("./routes/dashboard");
+const insightsRoutes = require("./routes/insights");
+const cedentesRoutes = require("./routes/cedentes");
 
 // Usar rotas de autenticação
 app.use("/auth", authRoutes);
 app.use("/dashboard", dashboardRoutes);
+app.use("/insights", insightsRoutes);
+// API para cedentes (usada pelos scripts em public/js)
+app.use("/api/cedentes", cedentesRoutes);
 
-// Redirecionar raiz para login
-app.get("/", (req, res) => {
-  res.redirect("/auth/login");
-});
+// Remover redirect duplicado para /auth/login
 
 // Rotas
 app.get("/", (req, res) => {
@@ -105,15 +115,25 @@ app.use((err, req, res, next) => {
   res.status(500).send("Algo deu errado!");
 });
 
-// Inicialização do servidor
+// Inicialização do servidor (aguarda sincronização do DB)
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(
-    "\x1b[32m%s\x1b[0m",
-    `🚀 Servidor rodando em http://localhost:${PORT}`
-  );
-  console.log(
-    "\x1b[36m%s\x1b[0m",
-    `📝 Ambiente: ${process.env.NODE_ENV || "desenvolvimento"}`
-  );
-});
+
+sequelize
+  .sync()
+  .then(() => {
+    console.log("\x1b[33m%s\x1b[0m", "DB: sincronizado com sucesso.");
+    app.listen(PORT, () => {
+      console.log(
+        "\x1b[32m%s\x1b[0m",
+        `🚀 Servidor rodando em http://localhost:${PORT}`
+      );
+      console.log(
+        "\x1b[36m%s\x1b[0m",
+        `📝 Ambiente: ${process.env.NODE_ENV || "desenvolvimento"}`
+      );
+    });
+  })
+  .catch((err) => {
+    console.error("Erro ao sincronizar o DB:", err);
+    process.exit(1);
+  });

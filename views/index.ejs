@@ -29,7 +29,12 @@
           <h5 class="card-title mb-0">Upload de Planilha</h5>
         </div>
         <div class="card-body">
-          <form action="/upload" method="post" enctype="multipart/form-data">
+          <form
+            id="upload-form"
+            action="/api/cedentes/upload"
+            method="post"
+            enctype="multipart/form-data"
+          >
             <div class="mb-3">
               <label for="planilha" class="form-label"
                 >Selecione a planilha de cedentes</label
@@ -61,7 +66,6 @@
                 <tr>
                   <th>Nome/Razão Social</th>
                   <th>CPF/CNPJ</th>
-                  <th>Status</th>
                   <th>Ações</th>
                 </tr>
               </thead>
