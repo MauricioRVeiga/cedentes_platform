@@ -64,7 +64,7 @@ function atualizarTabelaCedentes(cedentes) {
         </button>
         <button class="btn btn-sm btn-outline-danger" onclick="confirmarExclusao(${
           cedente.id
-        }, '${cedente.nome_razao_social}')">
+        }, '${cedente.nome_razao_social.replace(/'/g, "\\'")}')">
           <i class="fas fa-trash"></i>
         </button>
       </td>
@@ -146,11 +146,38 @@ async function salvarEdicao() {
     if (!response.ok) throw new Error("Erro ao salvar alterações");
 
     bootstrap.Modal.getInstance(document.getElementById("editarModal")).hide();
-    await carregarCedentes(); // Recarrega a lista em vez de recarregar a página
+    await carregarCedentes();
+    
+    // Mostrar toast de sucesso
+    mostrarToast("Cedente atualizado com sucesso!", "success");
   } catch (error) {
     console.error("Erro:", error);
     alert("Erro ao salvar alterações");
   }
+}
+
+// Função para mostrar toast
+function mostrarToast(mensagem, tipo = "success") {
+  const toastContainer = document.createElement("div");
+  toastContainer.innerHTML = `
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+      <div class="toast align-items-center text-white bg-${tipo} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            ${mensagem}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(toastContainer);
+  const toastEl = toastContainer.querySelector(".toast");
+  const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+  toast.show();
+  
+  // Remover o container após o toast desaparecer
+  setTimeout(() => toastContainer.remove(), 4000);
 }
 
 // Inicialização da página
@@ -191,14 +218,17 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           body: JSON.stringify(data),
         });
+        
         if (response.ok) {
           formNovoCedente.reset();
-          await carregarCedentes(); // Recarrega a lista em vez de recarregar a página
+          await carregarCedentes();
           bootstrap.Modal.getInstance(
             document.getElementById("novoCedenteModal")
           ).hide();
+          mostrarToast("Cedente cadastrado com sucesso!", "success");
         } else {
-          alert("Erro ao criar cedente");
+          const error = await response.json();
+          alert(error.error || "Erro ao criar cedente");
         }
       } catch (error) {
         console.error("Erro ao criar cedente:", error);
@@ -210,8 +240,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Inicializar formulário de importação
   const formImport = document.getElementById("importForm");
   if (formImport) {
-    formImport.onsubmit = function() {
-      // Mostrar indicador de carregamento antes do submit
+    formImport.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      // Mostrar indicador de carregamento
       const loadingDiv = document.createElement('div');
       loadingDiv.className = 'position-fixed top-50 start-50 translate-middle bg-white p-4 rounded shadow-lg';
       loadingDiv.style.zIndex = '9999';
@@ -225,37 +257,30 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       document.body.appendChild(loadingDiv);
       
-      // Permitir o envio normal do formulário (não previne o comportamento padrão)
-      return true;
-    };
+      const formData = new FormData(formImport);
+      
+      try {
+        const response = await fetch(formImport.action, {
+          method: "POST",
+          body: formData,
+        });
+        
+        // Remover loading
+        loadingDiv.remove();
+        
+        const data = await response.json();
+        
         if (response.ok) {
-          // Criar notificação do Bootstrap Toast
-          const toastContainer = document.createElement("div");
-          toastContainer.innerHTML = `
-            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-              <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                  <div class="toast-body">
-                    <strong>Importação concluída!</strong><br>
-                    Total: ${data.total} registros<br>
-                    Processados: ${data.processados}<br>
-                    Ignorados: ${data.ignorados}
-                  </div>
-                  <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-              </div>
-            </div>
-          `;
-          document.body.appendChild(toastContainer);
-          const toastEl = toastContainer.querySelector(".toast");
-          const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
-          toast.show();
+          // Mostrar notificação de sucesso
+          mostrarToast(
+            `Planilha processada! Total: ${data.total} | Processados: ${data.processados} | Ignorados: ${data.ignorados}`,
+            "success"
+          );
 
           // Atualizar a lista com os cedentes retornados
           if (data.cedentes) {
             atualizarTabelaCedentes(data.cedentes);
           } else {
-            // Fallback para recarregar a lista caso não receba os cedentes
             await carregarCedentes();
           }
 
@@ -268,6 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
           alert(data.error || "Erro ao importar arquivo");
         }
       } catch (error) {
+        loadingDiv.remove();
         console.error("Erro na importação:", error);
         alert("Erro ao importar arquivo");
       }
