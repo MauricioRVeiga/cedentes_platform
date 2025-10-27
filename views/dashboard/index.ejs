@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Gold Credit</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="/css/style.css" rel="stylesheet" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/dashboard">
+          <i class="fas fa-crown me-2"></i>Gold Credit
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="/auth/logout"
+                onclick="return confirm('Tem certeza que deseja sair?')"
+              >
+                <i class="fas fa-sign-out-alt me-1"></i> Sair
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <div class="row">
+        <!-- Estatísticas -->
+        <div class="col-md-4 mb-4">
+          <div class="stat-card">
+            <i class="fas fa-users stat-icon mb-3"></i>
+            <h3>Total de Cedentes</h3>
+            <p class="h2 mb-0">0</p>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="stat-card">
+            <i class="fas fa-file-contract stat-icon mb-3"></i>
+            <h3>Contratos Ativos</h3>
+            <p class="h2 mb-0">0</p>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="stat-card">
+            <i class="fas fa-clock stat-icon mb-3"></i>
+            <h3>Pendentes</h3>
+            <p class="h2 mb-0">0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Cedentes -->
+      <div class="card mt-4">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">Cedentes Recentes</h5>
+          <div>
+            <button
+              class="btn btn-gold me-2"
+              data-bs-toggle="modal"
+              data-bs-target="#importModal"
+            >
+              <i class="fas fa-file-excel me-2"></i>Importar Excel
+            </button>
+            <button
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#novoCedenteModal"
+            >
+              <i class="fas fa-plus me-2"></i>Novo Cedente
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Nome/Razão Social</th>
+                  <th>CPF/CNPJ</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="4" class="text-center">
+                    Nenhum cedente cadastrado
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Importação -->
+    <div class="modal fade" id="importModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-file-excel me-2"></i>Importar Cedentes
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form
+              id="importForm"
+              action="/dashboard/import"
+              method="post"
+              enctype="multipart/form-data"
+            >
+              <div class="mb-3">
+                <label class="form-label">Selecione o arquivo Excel</label>
+                <input
+                  type="file"
+                  class="form-control"
+                  name="file"
+                  accept=".xlsx,.xls"
+                  required
+                />
+              </div>
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                O arquivo deve conter as colunas: Nome/Razão Social, CPF/CNPJ,
+                Status
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button type="submit" form="importForm" class="btn btn-gold">
+              <i class="fas fa-upload me-2"></i>Importar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Novo Cedente -->
+    <div class="modal fade" id="novoCedenteModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-user-plus me-2"></i>Novo Cedente
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form
+              id="novoCedenteForm"
+              method="POST"
+              action="/dashboard/cedentes/novo"
+            >
+              <div class="mb-3">
+                <label class="form-label">Nome/Razão Social</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="nome_razao_social"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">CPF/CNPJ</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="cpf_cnpj"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Data de Validade</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  name="data_validade"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="status" required>
+                  <option value="Ativo">Ativo</option>
+                  <option value="Pendente">Pendente</option>
+                  <option value="Inativo">Inativo</option>
+                </select>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cancelar
+                </button>
+                <button type="submit" class="btn btn-gold">
+                  <i class="fas fa-save me-2"></i>Salvar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

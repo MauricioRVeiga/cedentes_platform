@@ -1,0 +1,199 @@
+:root {
+  --gold-primary: #d4af37;
+  --gold-light: #e5c667;
+  --gold-dark: #b39030;
+  --green-primary: #0f766e;
+  --green-dark: #0c5952;
+  --transition: all 0.3s ease;
+}
+
+/* Reset e Estilos Base */
+* {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-primary) #f0f0f0;
+}
+
+body {
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
+  font-family: "Poppins", sans-serif;
+}
+
+/* Header e Navegação */
+.navbar {
+  background: linear-gradient(90deg, var(--green-primary), var(--green-dark));
+  border-top: 3px solid var(--gold-primary);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  background: linear-gradient(45deg, var(--gold-primary), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: var(--transition);
+}
+
+.navbar-brand:hover {
+  transform: scale(1.05);
+}
+
+/* Cards e Componentes */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(212, 175, 55, 0.2);
+}
+
+.card-header {
+  background: linear-gradient(90deg, var(--green-primary), var(--green-dark));
+  color: white;
+  border-bottom: 2px solid var(--gold-primary);
+  border-radius: 10px 10px 0 0 !important;
+}
+
+/* Botões e Interações */
+.btn-primary {
+  background: linear-gradient(45deg, var(--green-primary), var(--green-dark));
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: var(--transition);
+}
+
+.btn-primary:hover::after {
+  left: 100%;
+}
+
+.btn-gold {
+  background: linear-gradient(45deg, var(--gold-primary), var(--gold-light));
+  color: white;
+  border: none;
+  transition: var(--transition);
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  color: white;
+}
+
+/* Badges e Status */
+.badge {
+  padding: 0.5em 1em;
+  border-radius: 50px;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.badge-success {
+  background: linear-gradient(45deg, var(--green-primary), var(--green-dark));
+  border: 1px solid var(--green-dark);
+}
+
+.badge-warning {
+  background: linear-gradient(45deg, var(--gold-primary), var(--gold-light));
+  border: 1px solid var(--gold-dark);
+  color: #000;
+}
+
+/* Modal */
+.modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  background: linear-gradient(90deg, var(--green-primary), var(--green-dark));
+  color: white;
+  border-bottom: 2px solid var(--gold-primary);
+  border-radius: 15px 15px 0 0;
+}
+
+.modal .alert {
+  border-left: 4px solid var(--gold-primary);
+}
+
+/* Dashboard Stats */
+.stat-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(212, 175, 55, 0.15);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  background: linear-gradient(45deg, var(--gold-primary), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .stat-card {
+    margin-bottom: 15px;
+  }
+
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+}
+
+/* Scrollbar Personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--gold-primary), var(--gold-dark));
+  border-radius: 4px;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
