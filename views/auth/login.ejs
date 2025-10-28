@@ -1,75 +1,133 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - Gold Credit</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link href="/css/auth.css" rel="stylesheet" />
-  </head>
-  <body class="auth-body">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'Login - Gold Credit SA' %></title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/css/auth.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold-primary: #d4af37;
+            --gold-light: #e5c667;
+            --gold-dark: #b39030;
+            --green-primary: #0f766e;
+            --green-dark: #0c5952;
+            --transition: all 0.3s ease;
+        }
+        
+        .auth-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .auth-box {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="auth-body">
     <div class="auth-container">
-      <div class="auth-box fade-in">
-        <div class="logo-container text-center mb-4">
-          <i class="fas fa-crown logo-icon mb-3"></i>
-          <h2 class="gold-gradient">Gold Credit</h2>
-          <p class="text-muted">Sistema de Gestão de Cedentes</p>
+        <div class="auth-box">
+            <!-- Logo -->
+            <div class="logo-container text-center mb-4">
+                <div class="logo-icon mb-3">
+                    <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-gem fa-2x text-dark"></i>
+                    </div>
+                </div>
+                <h1 class="h3 fw-bold text-dark">Gold Credit SA</h1>
+                <p class="text-muted">Gestão de Cedentes</p>
+            </div>
+
+            <!-- Flash Messages -->
+            <% if (success_msg && success_msg.length > 0) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <%= success_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+            
+            <% if (error_msg && error_msg.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <%= error_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+
+            <!-- Login Form -->
+            <form class="auth-form" action="/auth/login" method="POST">
+                <div class="form-group mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-envelope text-muted"></i>
+                        </span>
+                        <input type="email" name="email" class="form-control border-start-0" 
+                               placeholder="seu.email@goldcreditsa.com.br" required>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-lock text-muted"></i>
+                        </span>
+                        <input type="password" name="password" class="form-control border-start-0" 
+                               placeholder="Sua senha" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-warning w-100 py-2 fw-bold">
+                    <i class="fas fa-sign-in-alt me-2"></i>Entrar no Sistema
+                </button>
+            </form>
+
+            <!-- Links -->
+            <div class="auth-links text-center mt-4">
+                <p class="mb-2">
+                    <a href="/auth/register" class="text-decoration-none text-warning">
+                        <i class="fas fa-user-plus me-1"></i>Criar nova conta
+                    </a>
+                </p>
+                <p class="mb-0 small text-muted">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    Acesso restrito a colaboradores
+                </p>
+            </div>
         </div>
-
-        <% if (locals.messages && messages.error) { %>
-        <div class="alert alert-danger mb-4">
-          <i class="fas fa-exclamation-circle me-2"></i>
-          <%= messages.error %>
-        </div>
-        <% } %>
-
-        <form class="auth-form" method="POST" action="/auth/login">
-          <div class="form-floating mb-3">
-            <input
-              type="email"
-              class="form-control"
-              id="email"
-              name="email"
-              placeholder="nome@goldcreditsa.com.br"
-              required
-            />
-            <label for="email">Email Corporativo</label>
-          </div>
-
-          <div class="form-floating mb-4">
-            <input
-              type="password"
-              class="form-control"
-              id="password"
-              name="password"
-              placeholder="Sua senha"
-              required
-            />
-            <label for="password">Senha</label>
-          </div>
-
-          <button type="submit" class="btn btn-gold w-100 mb-3">
-            <i class="fas fa-sign-in-alt me-2"></i> Entrar
-          </button>
-        </form>
-
-        <div class="auth-links text-center">
-          <a href="/auth/register" class="link-gold">
-            <i class="fas fa-user-plus me-1"></i> Criar nova conta
-          </a>
-          <span class="mx-2">•</span>
-          <a href="/auth/forgot" class="link-gold">
-            <i class="fas fa-key me-1"></i> Esqueci minha senha
-          </a>
-        </div>
-      </div>
     </div>
-  </body>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

@@ -1,85 +1,63 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gestão de Cedentes - Gold Credit</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link href="/css/style.css" rel="stylesheet" />
-  </head>
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand" href="/">Gold Credit - Cedentes</a>
-      </div>
-    </nav>
+<div class="row justify-content-center align-items-center min-vh-80">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-lg">
+            <div class="card-body p-5 text-center">
+                <div class="mb-4">
+                    <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-gem fa-2x text-dark"></i>
+                    </div>
+                    <h1 class="h2 fw-bold text-dark mb-2">Gold Credit SA</h1>
+                    <p class="text-muted">Sistema de Gestão de Cedentes</p>
+                </div>
 
-    <div class="container mt-4">
-      <% if (messages.success) { %>
-      <div class="alert alert-success"><%= messages.success %></div>
-      <% } %> <% if (messages.error) { %>
-      <div class="alert alert-danger"><%= messages.error %></div>
-      <% } %>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-file-import fa-2x text-primary mb-3"></i>
+                                <h5 class="card-title">Importação em Lote</h5>
+                                <p class="card-text text-muted small">
+                                    Carregue planilhas Excel com dados de múltiplos cedentes simultaneamente
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-chart-line fa-2x text-success mb-3"></i>
+                                <h5 class="card-title">Análises Avançadas</h5>
+                                <p class="card-text text-muted small">
+                                    Insights inteligentes sobre o status dos contratos e vencimentos
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title mb-0">Upload de Planilha</h5>
-        </div>
-        <div class="card-body">
-          <form
-            id="upload-form"
-            action="/api/cedentes/upload"
-            method="post"
-            enctype="multipart/form-data"
-          >
-            <div class="mb-3">
-              <label for="planilha" class="form-label"
-                >Selecione a planilha de cedentes</label
-              >
-              <input
-                type="file"
-                class="form-control"
-                id="planilha"
-                name="planilha"
-                accept=".xlsx,.xls"
-                required
-              />
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="/auth/login" class="btn btn-warning btn-lg px-4 me-md-2">
+                        <i class="fas fa-sign-in-alt me-2"></i>Acessar Sistema
+                    </a>
+                    <a href="/auth/register" class="btn btn-outline-dark btn-lg px-4">
+                        <i class="fas fa-user-plus me-2"></i>Criar Conta
+                    </a>
+                </div>
+
+                <div class="mt-4">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Acesso restrito a colaboradores @goldcreditsa.com.br
+                    </small>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-upload"></i> Enviar
-            </button>
-          </form>
         </div>
-      </div>
-
-      <div class="card mt-4">
-        <div class="card-header">
-          <h5 class="card-title mb-0">Lista de Cedentes</h5>
-        </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Nome/Razão Social</th>
-                  <th>CPF/CNPJ</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="cedentes-lista">
-                <!-- Dados serão carregados via AJAX -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/your-code.js"></script>
-    <script src="/js/main.js"></script>
-  </body>
-</html>
+<style>
+.min-vh-80 {
+    min-height: 80vh;
+}
+</style>

@@ -205,5 +205,5 @@ Certifique-se de que estas bibliotecas estão carregadas:
 ### **Ordem de Carregamento dos Scripts**
 No `dashboard/index.ejs`:
 ```html
-<script src="/js/main.js"></script>      <!-- 1º - Utilitários -->
+<script src="/js/main.js"></script>      <!-- 1º - Utilitários -->a
 <script src="/js/cedentes

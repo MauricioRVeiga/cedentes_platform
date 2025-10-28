@@ -1,384 +1,349 @@
-<!-- Modal de Importação -->
-<div class="modal fade" id="importModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="fas fa-file-excel me-2"></i>Importar Cedentes
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <form id="importForm" action="/api/cedentes/upload" method="post" enctype="multipart/form-data">
-          <div class="mb-3">
-            <label class="form-label">Selecione o arquivo Excel</label>
-            <input type="file" class="form-control" name="planilha" accept=".xlsx,.xls" required />
-          </div>
-          <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            O arquivo deve conter as colunas: Nome/Razão Social, CPF/CNPJ, Status
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" form="importForm" class="btn btn-gold">
-          <i class="fas fa-upload me-2"></i>Importar
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- Modal Novo Cedente -->
 <div class="modal fade" id="novoCedenteModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
+      <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">
           <i class="fas fa-user-plus me-2"></i>Novo Cedente
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <form id="novoCedenteForm" method="POST" action="/api/cedentes/novo">
-          <div class="mb-3">
-            <label class="form-label">Nome/Razão Social</label>
-            <input type="text" class="form-control" name="nome_razao_social" required />
+      <form id="novoCedenteForm">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label">Nome/Razão Social *</label>
+              <input type="text" name="nome_razao_social" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">CPF/CNPJ *</label>
+              <input type="text" name="cpf_cnpj" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Data de Validade *</label>
+              <input type="date" name="data_validade" class="form-control" required>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Status do Contrato</label>
+              <select name="status" class="form-select">
+                <option value="CONTRATO SEM ASSINATURA MANUAL E DIGITAL">Sem Assinatura</option>
+                <option value="CONTRATO ASSINADO MANUALMENTE">Assinado Manualmente</option>
+                <option value="CONTRATO PRECISA SER RENOVADO">Precisa Renovar</option>
+                <option value="CONTRATOS IMPRESSOS QUE FALTAM ASSINAR">Faltam Assinar</option>
+                <option value="CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO">Avisados Renovação</option>
+                <option value="LEVOU O CONTRATO PARA ASSINAR">Levou para Assinar</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Observações</label>
+              <textarea name="observacoes" class="form-control" rows="3"></textarea>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">CPF/CNPJ</label>
-            <input type="text" class="form-control" name="cpf_cnpj" required />
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Data de Validade</label>
-            <input type="date" class="form-control" name="data_validade" required />
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Status</label>
-            <select class="form-select" name="status" required>
-              <option value="CONTRATO ASSINADO MANUALMENTE">CONTRATO ASSINADO MANUALMENTE</option>
-              <option value="CONTRATO SEM ASSINATURA MANUAL E DIGITAL">CONTRATO SEM ASSINATURA MANUAL E DIGITAL</option>
-              <option value="CONTRATO PRECISA SER RENOVADO">CONTRATO PRECISA SER RENOVADO</option>
-              <option value="CONTRATOS IMPRESSOS QUE FALTAM ASSINAR">CONTRATOS IMPRESSOS QUE FALTAM ASSINAR</option>
-              <option value="CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO">CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO</option>
-              <option value="LEVOU O CONTRATO PARA ASSINAR">LEVOU O CONTRATO PARA ASSINAR</option>
-            </select>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-gold">
-              <i class="fas fa-save me-2"></i>Salvar
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>Salvar Cedente
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
 
-<!-- Modal de Edição -->
-<div class="modal fade" id="editarModal" tabindex="-1">
+<!-- Modal Importar Excel -->
+<div class="modal fade" id="importModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-file-import me-2"></i>Importar Planilha
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="importForm" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Formato esperado:</strong> Excel (.xlsx, .xls)<br>
+            <strong>Colunas:</strong> Nome/Razão Social, CPF/CNPJ, Status, Data Validade
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Selecione o arquivo</label>
+            <input type="file" name="planilha" class="form-control" accept=".xlsx,.xls" required>
+            <div class="form-text">Tamanho máximo: 10MB. Arquivos existentes serão atualizados.</div>
+          </div>
+
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Atenção:</strong> CPF/CNPJ é usado como identificador único. 
+            Registros com CPF/CNPJ existente serão atualizados.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-upload me-2"></i>Importar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Cedente -->
+<div class="modal fade" id="editarModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
         <h5 class="modal-title">
           <i class="fas fa-edit me-2"></i>Editar Cedente
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <form id="editarForm">
+      <form onsubmit="salvarEdicao(); return false;">
+        <div class="modal-body">
           <input type="hidden" id="editar_id" />
-          <div class="mb-3">
-            <label class="form-label">Nome/Razão Social</label>
-            <input type="text" class="form-control" id="editar_nome_razao_social" required />
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label">Nome/Razão Social *</label>
+              <input type="text" id="editar_nome_razao_social" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">CPF/CNPJ *</label>
+              <input type="text" id="editar_cpf_cnpj" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Data de Validade *</label>
+              <input type="date" id="editar_data_validade" class="form-control" required>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Status do Contrato</label>
+              <select id="editar_status" class="form-select">
+                <option value="CONTRATO SEM ASSINATURA MANUAL E DIGITAL">Sem Assinatura</option>
+                <option value="CONTRATO ASSINADO MANUALMENTE">Assinado Manualmente</option>
+                <option value="CONTRATO PRECISA SER RENOVADO">Precisa Renovar</option>
+                <option value="CONTRATOS IMPRESSOS QUE FALTAM ASSINAR">Faltam Assinar</option>
+                <option value="CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO">Avisados Renovação</option>
+                <option value="LEVOU O CONTRATO PARA ASSINAR">Levou para Assinar</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Observações</label>
+              <textarea id="editar_observacoes" class="form-control" rows="3"></textarea>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">CPF/CNPJ</label>
-            <input type="text" class="form-control" id="editar_cpf_cnpj" required />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning" id="btnSalvarEdicao">
+            <i class="fas fa-save me-2"></i>Atualizar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Documentos -->
+<div class="modal fade" id="documentosModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-file-alt me-2"></i>Conferência de Documentos
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="documentos-header mb-4">
+          <h4 id="documentosCedenteNome" class="text-dark mb-2"></h4>
+          <div class="status-documentos">
+            <span id="statusDocumentos" class="badge bg-warning text-dark">
+              <i class="fas fa-clock me-1"></i>Documentos Pendentes
+            </span>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Data de Validade</label>
-            <input type="date" class="form-control" id="editar_data_validade" required />
+        </div>
+
+        <form id="formDocumentos">
+          <input type="hidden" id="documentosCedenteId" />
+
+          <!-- Documentos Cadastrais PJ -->
+          <div class="documentos-categoria mb-4">
+            <h5 class="border-bottom pb-2 mb-3">
+              <i class="fas fa-building text-primary me-2"></i>
+              Documentos Cadastrais PJ
+            </h5>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docContratoSocial" name="contrato_social">
+                  <label class="form-check-label" for="docContratoSocial">
+                    Contrato social
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docCartaoCnpj" name="cartao_cnpj">
+                  <label class="form-check-label" for="docCartaoCnpj">
+                    Cartão CNPJ
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docFaturamento" name="faturamento_12meses">
+                  <label class="form-check-label" for="docFaturamento">
+                    Faturamento últimos 12 meses
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docDreBalanco" name="dre_balanco">
+                  <label class="form-check-label" for="docDreBalanco">
+                    DRE / Balanço
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Status</label>
-            <select class="form-select" id="editar_status" required>
-              <option value="CONTRATO ASSINADO MANUALMENTE">CONTRATO ASSINADO MANUALMENTE</option>
-              <option value="CONTRATO SEM ASSINATURA MANUAL E DIGITAL">CONTRATO SEM ASSINATURA MANUAL E DIGITAL</option>
-              <option value="CONTRATO PRECISA SER RENOVADO">CONTRATO PRECISA SER RENOVADO</option>
-              <option value="CONTRATOS IMPRESSOS QUE FALTAM ASSINAR">CONTRATOS IMPRESSOS QUE FALTAM ASSINAR</option>
-              <option value="CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO">CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO</option>
-              <option value="LEVOU O CONTRATO PARA ASSINAR">LEVOU O CONTRATO PARA ASSINAR</option>
-            </select>
+
+          <!-- Documentos dos Sócios -->
+          <div class="documentos-categoria mb-4">
+            <h5 class="border-bottom pb-2 mb-3">
+              <i class="fas fa-user-tie text-success me-2"></i>
+              Documentos dos Sócios
+            </h5>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docCnhRgSocios" name="cnh_rg_socios">
+                  <label class="form-check-label" for="docCnhRgSocios">
+                    CNH ou RG sócios
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docIrSocios" name="ir_socios">
+                  <label class="form-check-label" for="docIrSocios">
+                    IR dos sócios
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dados de Contato -->
+          <div class="documentos-categoria mb-4">
+            <h5 class="border-bottom pb-2 mb-3">
+              <i class="fas fa-home text-info me-2"></i>
+              Dados de Contato
+            </h5>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docComprovanteEndereco" name="comprovante_endereco">
+                  <label class="form-check-label" for="docComprovanteEndereco">
+                    Comprovante de endereço residência e empresa atualizado
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docEmail" name="email">
+                  <label class="form-check-label" for="docEmail">
+                    E-mail
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dados Financeiros -->
+          <div class="documentos-categoria mb-4">
+            <h5 class="border-bottom pb-2 mb-3">
+              <i class="fas fa-chart-line text-warning me-2"></i>
+              Dados Financeiros
+            </h5>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docCurvaAbc" name="curva_abc">
+                  <label class="form-check-label" for="docCurvaAbc">
+                    Curva ABC
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input documento-check" type="checkbox" id="docDadosBancarios" name="dados_bancarios">
+                  <label class="form-check-label" for="docDadosBancarios">
+                    Dados Bancários (Tipo da conta, n° do banco, Agência, Conta, Favorecido, CNPJ/CPF, Chave pix)
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumo -->
+          <div class="card bg-light">
+            <div class="card-body">
+              <div class="row text-center">
+                <div class="col-md-4">
+                  <h5 id="totalDocumentos">0</h5>
+                  <small class="text-muted">Total</small>
+                </div>
+                <div class="col-md-4">
+                  <h5 id="documentosConcluidos" class="text-success">0</h5>
+                  <small class="text-muted">Concluídos</small>
+                </div>
+                <div class="col-md-4">
+                  <h5 id="documentosPendentes" class="text-warning">0</h5>
+                  <small class="text-muted">Pendentes</small>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="salvarEdicao()">
-          <i class="fas fa-save me-2"></i>Salvar Alterações
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" id="btnSalvarDocumentos">
+          <i class="fas fa-save me-2"></i>Salvar Conferência
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal de Confirmação de Exclusão -->
+<!-- Modal de Confirmação -->
 <div class="modal fade" id="confirmacaoModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="fas fa-exclamation-triangle text-danger me-2"></i>Confirmar Exclusão
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="confirmacaoTitulo">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirmação
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <p id="mensagemConfirmacao">Tem certeza que deseja excluir este item?</p>
+        <div class="text-center py-3">
+          <i class="fas fa-question-circle fa-3x text-warning mb-3"></i>
+          <p class="mb-0" id="confirmacaoMensagem"></p>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="btnConfirmarExclusao">
-          <i class="fas fa-trash me-2"></i>Excluir
+        <button type="button" class="btn btn-danger" id="btnConfirmarAcao">
+          <i class="fas fa-trash me-2"></i>Confirmar
         </button>
       </div>
     </div>
   </div>
 </div>
-
-<!-- Modal de Conferência de Documentos -->
-<div class="modal fade" id="documentosModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="fas fa-file-alt me-2"></i>Conferência de Documentos - <span id="cedenteName"></span>
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <h6 class="mb-3">Documentos para cadastro PJ</h6>
-        <div class="row">
-          <div class="col-md-6">
-            <div class="list-group">
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>Contrato Social</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_contrato_social" />
-                  </div>
-                </div>
-              </div>
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>Cartão CNPJ</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_cartao_cnpj" />
-                  </div>
-                </div>
-              </div>
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>Faturamento últimos 12 meses</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_faturamento" />
-                  </div>
-                </div>
-              </div>
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>DRE / Balanço</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_dre_balanco" />
-                  </div>
-                </div>
-              </div>
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>CNH ou RG sócios</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_doc_socios" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="list-group">
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>IR dos sócios</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_ir_socios" />
-                  </div>
-                </div>
-              </div>
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>Comprovante de endereço (residência e empresa)</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_comprovante_endereco" />
-                  </div>
-                </div>
-              </div>
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>E-mail</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_email" />
-                  </div>
-                </div>
-              </div>
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>Curva ABC</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_curva_abc" />
-                  </div>
-                </div>
-              </div>
-              <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>Dados Bancários</span>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="check_dados_bancarios" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Detalhes dos Dados Bancários -->
-        <div id="dados_bancarios_detalhes" class="mt-4" style="display: none">
-          <h6 class="mb-3">Detalhes dos Dados Bancários</h6>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">Tipo da conta</label>
-              <input type="text" class="form-control" id="tipo_conta" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Número do banco</label>
-              <input type="text" class="form-control" id="numero_banco" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Número da Agência</label>
-              <input type="text" class="form-control" id="numero_agencia" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Número da conta</label>
-              <input type="text" class="form-control" id="numero_conta" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Favorecido</label>
-              <input type="text" class="form-control" id="favorecido" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">CNPJ/CPF</label>
-              <input type="text" class="form-control" id="cpf_cnpj_conta" />
-            </div>
-            <div class="col-12">
-              <label class="form-label">Chave PIX</label>
-              <input type="text" class="form-control" id="chave_pix" />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-        <button type="button" class="btn btn-gold">Salvar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// Funções globais necessárias para os modais
-let cedenteIdParaExcluir = null;
-
-function confirmarExclusao(id, nome) {
-  cedenteIdParaExcluir = id;
-  document.getElementById("mensagemConfirmacao").textContent =
-    'Tem certeza que deseja excluir o cedente "' + nome + '"?';
-  const modal = new bootstrap.Modal(document.getElementById("confirmacaoModal"));
-  modal.show();
-}
-
-function confirmarExclusaoTodos() {
-  cedenteIdParaExcluir = "todos";
-  document.getElementById("mensagemConfirmacao").textContent =
-    "Tem certeza que deseja excluir TODOS os cedentes? Esta ação não pode ser desfeita.";
-  const modal = new bootstrap.Modal(document.getElementById("confirmacaoModal"));
-  modal.show();
-}
-
-// Listener para o botão de confirmação
-document.addEventListener("DOMContentLoaded", function () {
-  const btnConfirm = document.getElementById("btnConfirmarExclusao");
-  if (btnConfirm) {
-    btnConfirm.addEventListener("click", async function () {
-      if (cedenteIdParaExcluir === null) return;
-      
-      if (cedenteIdParaExcluir === "todos") {
-        await excluirTodosCedentes();
-      } else {
-        await excluirCedente(cedenteIdParaExcluir);
-      }
-    });
-  }
-});
-
-async function excluirCedente(id) {
-  try {
-    const response = await fetch(`/dashboard/cedentes/${id}`, {
-      method: "DELETE",
-      headers: { Accept: "application/json" },
-    });
-    
-    const modal = bootstrap.Modal.getInstance(document.getElementById("confirmacaoModal"));
-    
-    if (response.ok) {
-      if (modal) modal.hide();
-      window.location.reload();
-    } else {
-      const body = await response.json().catch(() => ({}));
-      console.error("Erro ao excluir cedente:", body);
-      if (modal) modal.hide();
-      alert(body.error || "Erro ao excluir cedente");
-    }
-  } catch (error) {
-    console.error("Erro:", error);
-    alert("Erro ao excluir cedente");
-  } finally {
-    cedenteIdParaExcluir = null;
-  }
-}
-
-async function excluirTodosCedentes() {
-  try {
-    const response = await fetch("/dashboard/cedentes", {
-      method: "DELETE",
-      headers: { Accept: "application/json" },
-    });
-    
-    const modal = bootstrap.Modal.getInstance(document.getElementById("confirmacaoModal"));
-    
-    if (response.ok) {
-      if (modal) modal.hide();
-      window.location.reload();
-    } else {
-      const body = await response.json().catch(() => ({}));
-      console.error("Erro ao excluir todos:", body);
-      if (modal) modal.hide();
-      alert(body.error || "Erro ao excluir cedentes");
-    }
-  } catch (error) {
-    console.error("Erro:", error);
-    alert("Erro ao excluir cedentes");
-  } finally {
-    cedenteIdParaExcluir = null;
-  }
-}
-</script>

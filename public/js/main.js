@@ -1,290 +1,163 @@
+// Utilitários globais
 document.addEventListener("DOMContentLoaded", () => {
-  // Função para atualizar a tabela de cedentes
-  const atualizarTabelaCedentes = (cedentes) => {
-    const tbody = document.querySelector('#tabelaCedentes tbody');
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-    cedentes.forEach(cedente => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${cedente.nome_razao_social}</td>
-        <td>${formatCpfCnpj(cedente.cpf_cnpj)}</td>
-        <td><span class="badge ${getStatusClass(cedente.status)}">${cedente.status}</span></td>
-        <td>${new Date(cedente.data_validade).toLocaleDateString()}</td>
-        <td>
-          <button onclick="verDetalhes(${cedente.id})" class="btn btn-sm btn-primary">
-            <i class="fas fa-edit"></i> Editar
-          </button>
-          <button onclick="confirmarExclusao(${cedente.id}, '${cedente.nome_razao_social}')" class="btn btn-sm btn-danger">
-            <i class="fas fa-trash"></i> Excluir
-          </button>
-        </td>
-      `;
-      tbody.appendChild(row);
-    });
-  };
-
-  document.addEventListener("DOMContentLoaded", () => {
-  // Carregar lista de cedentes inicialmente
-  carregarCedentes();
-  const carregarCedentes = async () => {
-    try {
-      const response = await fetch("/dashboard/cedentes");
-      const cedentes = await response.json();
-      atualizarTabelaCedentes(cedentes);
-    } catch (error) {
-      console.error("Erro ao carregar cedentes:", error);
-    }
-  };
-
-  // Inicializar formulário de novo cedente
-  const formNovoCedente = document.getElementById("novoCedenteForm");
-  if (formNovoCedente) {
-    formNovoCedente.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(formNovoCedente);
-      try {
-        const response = await fetch(formNovoCedente.action, {
-          method: "POST",
-          body: formData,
-        });
-        if (response.ok) {
-          location.reload();
-        } else {
-          alert("Erro ao criar cedente");
-        }
-      } catch (error) {
-        console.error("Erro ao criar cedente:", error);
-        alert("Erro ao criar cedente");
-      }
-    });
-  }
-
-  // Inicializar formulário de importação
-  const formImport = document.getElementById("importForm");
-  if (formImport) {
-    formImport.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(formImport);
-      try {
-        const response = await fetch(formImport.action, {
-          method: "POST",
-          body: formData,
-        });
-        const data = await response.json();
-        if (response.ok) {
-          // Mostrar mensagem de sucesso com os detalhes do processamento
-          const message = `
-            Planilha processada com sucesso!\n
-            Total de registros: ${data.total}\n
-            Registros processados: ${data.processados}\n
-            Registros ignorados: ${data.ignorados}
-          `;
-          alert(message);
-          
-          // Atualizar a lista de cedentes sem recarregar a página
-          await carregarCedentes();
-          
-          // Limpar o campo de arquivo
-          formImport.reset();
-        } else {
-          alert(data.error || "Erro ao importar arquivo");
-        }
-      } catch (error) {
-        console.error("Erro na importação:", error);
-        alert("Erro ao importar arquivo");
-      }
-    });
-  }
+  console.log("Sistema Gold Credit SA inicializado");
 });
 
-// Função para visualizar detalhes do cedente
-async function verDetalhes(id) {
-  try {
-    const response = await fetch(`/dashboard/cedentes/${id}`);
-    if (!response.ok) throw new Error("Erro ao carregar dados do cedente");
-
-    const cedente = await response.json();
-
-    // Preencher formulário de edição
-    document.getElementById("editar_id").value = cedente.id;
-    document.getElementById("editar_nome_razao_social").value =
-      cedente.nome_razao_social;
-    document.getElementById("editar_cpf_cnpj").value = cedente.cpf_cnpj;
-    document.getElementById("editar_data_validade").value =
-      cedente.data_validade ? cedente.data_validade.split("T")[0] : "";
-    document.getElementById("editar_status").value = cedente.status;
-
-    // Abrir modal de edição
-    const modal = new bootstrap.Modal(document.getElementById("editarModal"));
-    modal.show();
-  } catch (error) {
-    console.error("Erro:", error);
-    alert("Erro ao carregar dados do cedente");
+// Funções utilitárias globais
+function formatCpfCnpj(cpfCnpj) {
+  if (!cpfCnpj) return '';
+  
+  const cleaned = cpfCnpj.toString().replace(/\D/g, "");
+  if (cleaned.length === 11) {
+    return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  } else if (cleaned.length === 14) {
+    return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
   }
+  return cpfCnpj;
 }
 
-// Função para salvar edição
-async function salvarEdicao() {
-  try {
-    const id = document.getElementById("editar_id").value;
-    const data = {
-      nome_razao_social: document.getElementById("editar_nome_razao_social")
-        .value,
-      cpf_cnpj: document.getElementById("editar_cpf_cnpj").value,
-      data_validade: document.getElementById("editar_data_validade").value,
-      status: document.getElementById("editar_status").value,
-    };
-
-    const response = await fetch(`/dashboard/cedentes/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) throw new Error("Erro ao salvar alterações");
-
-    bootstrap.Modal.getInstance(document.getElementById("editarModal")).hide();
-    location.reload();
-  } catch (error) {
-    console.error("Erro:", error);
-    alert("Erro ao salvar alterações");
-  }
-}
-
-// Função para confirmar exclusão
-function confirmarExclusao(id, nome) {
-  document.getElementById(
-    "mensagemConfirmacao"
-  ).textContent = `Tem certeza que deseja excluir o cedente "${nome}"?`;
-
-  const modal = new bootstrap.Modal(
-    document.getElementById("confirmacaoModal")
-  );
-  document.getElementById("btnConfirmarExclusao").onclick = () =>
-    excluirCedente(id);
-  modal.show();
-}
-
-// Função para excluir cedente
-async function excluirCedente(id) {
-  try {
-    const response = await fetch(`/dashboard/cedentes/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) throw new Error("Erro ao excluir cedente");
-
-    bootstrap.Modal.getInstance(
-      document.getElementById("confirmacaoModal")
-    ).hide();
-    location.reload();
-  } catch (error) {
-    console.error("Erro:", error);
-    alert("Erro ao excluir cedente");
-  }
-}
-
-// Função para confirmar exclusão de todos
-function confirmarExclusaoTodos() {
-  document.getElementById("mensagemConfirmacao").textContent =
-    "Tem certeza que deseja excluir TODOS os cedentes? Esta ação não pode ser desfeita.";
-
-  const modal = new bootstrap.Modal(
-    document.getElementById("confirmacaoModal")
-  );
-  document.getElementById("btnConfirmarExclusao").onclick =
-    excluirTodosCedentes;
-  modal.show();
-}
-
-// Função para excluir todos os cedentes
-async function excluirTodosCedentes() {
-  try {
-    const response = await fetch("/dashboard/cedentes", {
-      method: "DELETE",
-    });
-
-    if (!response.ok) throw new Error("Erro ao excluir todos os cedentes");
-
-    bootstrap.Modal.getInstance(
-      document.getElementById("confirmacaoModal")
-    ).hide();
-    location.reload();
-  } catch (error) {
-    console.error("Erro:", error);
-    alert("Erro ao excluir todos os cedentes");
-  }
-}
-
-// Função para mostrar modal de documentos
-document.addEventListener("DOMContentLoaded", () => {
-  const documentosModal = document.getElementById("documentosModal");
-  const checkDadosBancarios = document.getElementById("check_dados_bancarios");
-  const dadosBancariosDetalhes = document.getElementById(
-    "dados_bancarios_detalhes"
-  );
-
-  if (documentosModal) {
-    documentosModal.addEventListener("show.bs.modal", (event) => {
-      const button = event.relatedTarget;
-      const cedenteName = button.dataset.cedente;
-      document.getElementById("cedenteName").textContent = cedenteName;
-    });
-  }
-
-  if (checkDadosBancarios && dadosBancariosDetalhes) {
-    checkDadosBancarios.addEventListener("change", function () {
-      dadosBancariosDetalhes.style.display = this.checked ? "block" : "none";
-    });
-  }
-});
-
-// Função utilitária para pegar cores dos status
 function getStatusClass(status) {
   const statusClasses = {
     "CONTRATO ASSINADO MANUALMENTE": "bg-success",
     "CONTRATO SEM ASSINATURA MANUAL E DIGITAL": "bg-danger",
-    "CONTRATO PRECISA SER RENOVADO": "bg-danger",
-    "CONTRATOS IMPRESSOS QUE FALTAM ASSINAR": "bg-warning",
-    "CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO": "bg-info",
-    "LEVOU O CONTRATO PARA ASSINAR": "bg-primary",
+    "CONTRATO PRECISA SER RENOVADO": "bg-warning",
+    "CONTRATOS IMPRESSOS QUE FALTAM ASSINAR": "bg-info",
+    "CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO": "bg-primary",
+    "LEVOU O CONTRATO PARA ASSINAR": "bg-secondary"
   };
   return statusClasses[status] || "bg-secondary";
 }
 
-// Função para formatar CPF/CNPJ
-function formatCpfCnpj(cpfCnpj) {
-  const cleaned = cpfCnpj.replace(/\D/g, "");
-  if (cleaned.length === 11) {
-    return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-  } else {
-    return cleaned.replace(
-      /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
-      "$1.$2.$3/$4-$5"
-    );
+function formatDate(dateString) {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pt-BR');
+}
+
+// Sistema de toasts global
+function mostrarToast(mensagem, tipo = "success") {
+  // Remover toasts existentes
+  const toastsExistentes = document.querySelectorAll('.toast-container');
+  toastsExistentes.forEach(toast => toast.remove());
+
+  const toastContainer = document.createElement('div');
+  toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+  toastContainer.style.zIndex = '9999';
+
+  const toastHtml = `
+    <div class="toast align-items-center text-white bg-${tipo} border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="fas ${tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+          ${mensagem}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  `;
+
+  toastContainer.innerHTML = toastHtml;
+  document.body.appendChild(toastContainer);
+
+  const toastEl = toastContainer.querySelector('.toast');
+  const toast = new bootstrap.Toast(toastEl, { 
+    delay: 4000,
+    autohide: true
+  });
+  
+  toast.show();
+  
+  // Remover após desaparecer
+  toastEl.addEventListener('hidden.bs.toast', () => {
+    toastContainer.remove();
+  });
+}
+
+// Função para mostrar loading
+function mostrarLoading(mensagem = "Processando...") {
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'loading-overlay';
+  loadingDiv.innerHTML = `
+    <div class="loading-content">
+      <div class="spinner-border text-primary mb-3" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="mb-0">${mensagem}</p>
+    </div>
+  `;
+  document.body.appendChild(loadingDiv);
+  return loadingDiv;
+}
+
+// Função para esconder loading
+function esconderLoading(loadingDiv) {
+  if (loadingDiv && loadingDiv.parentNode) {
+    loadingDiv.parentNode.removeChild(loadingDiv);
   }
 }
 
-// Inicializar máscaras e validações para formulários
-document.addEventListener("DOMContentLoaded", () => {
-  // Máscara CPF/CNPJ
-  const cpfCnpjInputs = document.querySelectorAll('input[name="cpf_cnpj"]');
-  cpfCnpjInputs.forEach((input) => {
-    input.addEventListener("input", (e) => {
-      let value = e.target.value.replace(/\D/g, "");
-      if (value.length <= 11) {
-        value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-      } else {
-        value = value.replace(
-          /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
-          "$1.$2.$3/$4-$5"
-        );
-      }
-      e.target.value = value;
-    });
-  });
-});
+// Debounce function para busca
+function debounce(func, wait, immediate) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      timeout = null;
+      if (!immediate) func(...args);
+    };
+    const callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func(...args);
+  };
+}
+
+// Validação de CPF/CNPJ
+function validarCPFCNPJ(cpfCnpj) {
+  const cleaned = cpfCnpj.replace(/\D/g, '');
+  
+  if (cleaned.length === 11) {
+    return validarCPF(cleaned);
+  } else if (cleaned.length === 14) {
+    return validarCNPJ(cleaned);
+  }
+  return false;
+}
+
+function validarCPF(cpf) {
+  if (/(\d)\1{10}/.test(cpf)) return false;
+  
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+  let resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf[9])) return false;
+  
+  soma = 0;
+  for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+  resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  
+  return resto === parseInt(cpf[10]);
+}
+
+function validarCNPJ(cnpj) {
+  if (/(\d)\1{13}/.test(cnpj)) return false;
+  
+  // Implementação básica da validação de CNPJ
+  const pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  
+  let soma = 0;
+  for (let i = 0; i < 12; i++) soma += parseInt(cnpj[i]) * pesos1[i];
+  let resto = soma % 11;
+  let digito1 = resto < 2 ? 0 : 11 - resto;
+  
+  if (digito1 !== parseInt(cnpj[12])) return false;
+  
+  soma = 0;
+  for (let i = 0; i < 13; i++) soma += parseInt(cnpj[i]) * pesos2[i];
+  resto = soma % 11;
+  let digito2 = resto < 2 ? 0 : 11 - resto;
+  
+  return digito2 === parseInt(cnpj[13]);
+}

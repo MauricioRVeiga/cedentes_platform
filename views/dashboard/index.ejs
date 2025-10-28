@@ -1,1083 +1,232 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - Gold Credit</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link href="/css/style.css" rel="stylesheet" />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <!-- Nova Navbar -->
-    <nav class="navbar-modern">
-      <div class="navbar-container">
-        <div class="navbar-brand-modern">
-          <i class="fas fa-crown logo"></i>
-          <h1 class="title">Gold Credit</h1>
+<div class="row">
+  <!-- Estatísticas Rápidas -->
+  <div class="col-12 mb-4">
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="card bg-primary text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="flex-grow-1">
+                <h4 class="card-title mb-0"><%= estatisticas.total || 0 %></h4>
+                <small>Total de Cedentes</small>
+              </div>
+              <div class="flex-shrink-0">
+                <i class="fas fa-users fa-2x opacity-50"></i>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="navbar-menu">
-          <a href="/dashboard" class="nav-link-modern">
-            <i class="fas fa-home"></i> Dashboard
-          </a>
-          <a href="/insights" class="nav-link-modern">
-            <i class="fas fa-chart-line"></i> Insights
-          </a>
-          <a href="#" class="nav-link-modern">
-            <i class="fas fa-cog"></i> Configurações
-          </a>
-        </div>
-        <button class="mobile-menu-btn">
-          <i class="fas fa-bars"></i>
-        </button>
       </div>
-    </nav>
+      <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="flex-grow-1">
+                <h4 class="card-title mb-0">
+                  <%= estatisticas.proximosVencimento || 0 %>
+                </h4>
+                <small>Próximos do Vencimento</small>
+              </div>
+              <div class="flex-shrink-0">
+                <i class="fas fa-clock fa-2x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-danger text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="flex-grow-1">
+                <h4 class="card-title mb-0">
+                  <%= estatisticas.vencidos || 0 %>
+                </h4>
+                <small>Contratos Vencidos</small>
+              </div>
+              <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-success text-white">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="flex-grow-1">
+                <h4 class="card-title mb-0">
+                  <% const emDia = (estatisticas.total || 0) - (estatisticas.vencidos || 0) - (estatisticas.proximosVencimento || 0) %> 
+                  <%= emDia > 0 ? emDia : 0 %>
+                </h4>
+                <small>Em Dia</small>
+              </div>
+              <div class="flex-shrink-0">
+                <i class="fas fa-check-circle fa-2x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <main class="main-content">
-      <!-- Cards de Estatísticas (dinâmicos por status) -->
-      <div class="dashboard-grid">
-        <% if (typeof statusMeta !== 'undefined' && Array.isArray(statusMeta) &&
-        statusMeta.length > 0) { %> <% statusMeta.forEach(function(s) { %>
-        <div class="stat-card-modern">
-          <div class="stat-icon-modern" title="<%= s.title %>">
-            <i class="<%= s.icon %>"></i>
+<div class="row">
+  <!-- Cards de Status -->
+  <div class="col-md-4 mb-4">
+    <div class="card h-100">
+      <div class="card-header bg-dark text-white">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-chart-pie me-2"></i>Distribuição por Status
+        </h5>
+      </div>
+      <div class="card-body">
+        <% if (statusMeta && statusMeta.length > 0) { %>
+          <% statusMeta.forEach(status => { %>
+          <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded <%= status.count > 0 ? 'bg-light' : '' %>">
+            <div class="d-flex align-items-center">
+              <i class="<%= status.icon %> me-2 text-<%= status.color %>"></i>
+              <span class="small"><%= status.title %></span>
+            </div>
+            <span class="badge bg-<%= status.color %>"><%= status.count %></span>
           </div>
-          <div class="stat-info">
-            <h3><%= s.title %></h3>
-            <p class="h2 mb-0">
-              <%= typeof s.count !== 'undefined' ? s.count : 0 %>
-            </p>
+          <% }); %>
+        <% } else { %>
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-chart-pie fa-2x mb-2"></i>
+            <p>Nenhum dado disponível</p>
           </div>
-        </div>
-        <% }); %> <% } else { %>
-        <!-- fallback: manter pelo menos os três principais -->
-        <div class="stat-card-modern">
-          <div class="stat-icon-modern"><i class="fas fa-users"></i></div>
-          <div class="stat-info">
-            <h3>Total de Cedentes</h3>
-            <p class="h2 mb-0">
-              <%= typeof total !== 'undefined' ? total : 0 %>
-            </p>
-          </div>
-        </div>
         <% } %>
       </div>
+    </div>
+  </div>
 
-      <!-- Lista de Cedentes -->
-      <div class="container mt-4">
-        <div class="card mt-4">
-          <div
-            class="card-header d-flex justify-content-between align-items-center"
-          >
-            <h5 class="mb-0">Cedentes Recentes</h5>
-            <div>
-              <button
-                class="btn btn-danger me-2"
-                onclick="confirmarExclusaoTodos()"
-              >
-                <i class="fas fa-trash me-2"></i>Excluir Todos
-              </button>
-              <button
-                class="btn btn-gold me-2"
-                data-bs-toggle="modal"
-                data-bs-target="#importModal"
-              >
-                <i class="fas fa-file-excel me-2"></i>Importar Excel
-              </button>
-              <button
-                class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#novoCedenteModal"
-              >
-                <i class="fas fa-plus me-2"></i>Novo Cedente
-              </button>
+  <!-- Ações Rápidas -->
+  <div class="col-md-8 mb-4">
+    <div class="card h-100">
+      <div class="card-header bg-dark text-white">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-bolt me-2"></i>Ações Rápidas
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <button class="btn btn-outline-primary w-100 h-100 py-3" data-bs-toggle="modal" data-bs-target="#novoCedenteModal">
+              <i class="fas fa-user-plus fa-2x mb-2"></i><br />
+              Novo Cedente
+            </button>
+          </div>
+          <div class="col-md-6">
+            <button class="btn btn-outline-success w-100 h-100 py-3" data-bs-toggle="modal" data-bs-target="#importModal">
+              <i class="fas fa-file-import fa-2x mb-2"></i><br />
+              Importar Excel
+            </button>
+          </div>
+          <div class="col-md-6">
+            <button class="btn btn-outline-info w-100 h-100 py-3" onclick="exportarExcel()">
+              <i class="fas fa-file-export fa-2x mb-2"></i><br />
+              Exportar Dados
+            </button>
+          </div>
+          <div class="col-md-6">
+            <button class="btn btn-outline-danger w-100 h-100 py-3" onclick="confirmarExclusaoTodos()">
+              <i class="fas fa-trash fa-2x mb-2"></i><br />
+              Limpar Tudo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lista de Cedentes -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center flex-wrap">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-list me-2"></i>Lista de Cedentes
+        </h5>
+        <span class="badge bg-warning text-dark" id="total-cedentes-filtro">
+          <%= total %> cedente<%= total !== 1 ? 's' : '' %>
+        </span>
+      </div>
+      <div class="card-body">
+        <!-- Filtros -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fas fa-search"></i>
+              </span>
+              <input type="text" id="search" class="form-control" placeholder="Buscar por nome ou CPF/CNPJ...">
             </div>
           </div>
-          <div class="card-body">
-            <% const lim = typeof limit !== 'undefined' ? limit : 20; const cur
-            = typeof currentPage !== 'undefined' ? currentPage : 1; const tot =
-            typeof total !== 'undefined' ? total : 0; const startIndex = tot ===
-            0 ? 0 : (cur - 1) * lim + 1; const endIndex = tot === 0 ? 0 :
-            startIndex + (cedentes ? cedentes.length : 0) - 1; %>
-            <div class="mb-2 text-muted">
-              Mostrando <strong><%= startIndex %></strong>–<strong
-                ><%= endIndex %></strong
-              >
-              de <strong><%= tot %></strong>
-            </div>
-            <div class="table-responsive">
-              <table class="table" id="tabelaCedentes">
-                <thead>
-                  <tr>
-                    <th>Nome/Razão Social</th>
-                    <th>CPF/CNPJ</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Os dados serão carregados via JavaScript -->
-                </tbody>
-              </table>
-            </div>
-            <!-- Paginação -->
-            <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-            <nav aria-label="Navegação de páginas" class="mt-3">
-              <ul class="pagination justify-content-center">
-                <li class="page-item <%= currentPage <= 1 ? 'disabled' : '' %>">
-                  <a class="page-link" href="?page=<%= currentPage - 1 %>"
-                    >Anterior</a
-                  >
-                </li>
+          <div class="col-md-4">
+            <select id="status-filter" class="form-select">
+              <option value="">Todos os status</option>
+              <% if (statusMeta && statusMeta.length > 0) { %>
+                <% statusMeta.forEach(status => { %>
+                <option value="<%= status.key %>"><%= status.title %></option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-outline-secondary w-100" onclick="carregarCedentes()">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+        </div>
 
-                <% const maxButtons = 5; let start = Math.max(1, currentPage -
-                Math.floor(maxButtons / 2)); let end = start + maxButtons - 1;
-                if (end > totalPages) { end = totalPages; start = Math.max(1,
-                end - maxButtons + 1); } %> <% if (start > 1) { %>
-                <li class="page-item">
-                  <a class="page-link" href="?page=1">1</a>
-                </li>
-                <% if (start > 2) { %>
-                <li class="page-item disabled">
-                  <span class="page-link">…</span>
-                </li>
-                <% } %> <% } %> <% for (let p = start; p <= end; p++) { %>
-                <li class="page-item <%= p === currentPage ? 'active' : '' %>">
-                  <a class="page-link" href="?page=<%= p %>"><%= p %></a>
-                </li>
-                <% } %> <% if (end < totalPages) { %> <% if (end < totalPages -
-                1) { %>
-                <li class="page-item disabled">
-                  <span class="page-link">…</span>
-                </li>
-                <% } %>
-                <li class="page-item">
-                  <a class="page-link" href="?page=<%= totalPages %>"
-                    ><%= totalPages %></a
-                  >
-                </li>
-                <% } %>
+        <!-- Tabela -->
+        <div class="table-responsive">
+          <table class="table table-hover" id="tabelaCedentes">
+            <thead class="table-dark">
+              <tr>
+                <th>Nome/Razão Social</th>
+                <th>CPF/CNPJ</th>
+                <th>Status</th>
+                <th>Data Validade</th>
+                <th width="120">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JavaScript irá preencher aqui -->
+            </tbody>
+          </table>
+        </div>
 
-                <li
-                  class="page-item <%= currentPage >= totalPages ? 'disabled' : '' %>"
-                >
-                  <a class="page-link" href="?page=<%= currentPage + 1 %>"
-                    >Próxima</a
-                  >
-                </li>
-              </ul>
-            </nav>
+        <!-- Paginação -->
+        <% if (totalPages > 1) { %>
+        <nav>
+          <ul class="pagination justify-content-center">
+            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+              <a class="page-link" href="?page=<%= currentPage - 1 %>">Anterior</a>
+            </li>
+
+            <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+              <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+            </li>
             <% } %>
-          </div>
-        </div>
+
+            <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+              <a class="page-link" href="?page=<%= currentPage + 1 %>">Próxima</a>
+            </li>
+          </ul>
+        </nav>
+        <% } %>
       </div>
+    </div>
+  </div>
+</div>
 
-      <!-- Modal de Importação -->
-      <div class="modal fade" id="importModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">
-                <i class="fas fa-file-excel me-2"></i>Importar Cedentes
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <form
-                id="importForm"
-                action="/api/cedentes/upload"
-                method="post"
-                enctype="multipart/form-data"
-              >
-                <div class="mb-3">
-                  <label class="form-label">Selecione o arquivo Excel</label>
-                  <input
-                    type="file"
-                    class="form-control"
-                    name="planilha"
-                    accept=".xlsx,.xls"
-                    required
-                  />
-                </div>
-                <div class="alert alert-info">
-                  <i class="fas fa-info-circle me-2"></i>
-                  O arquivo deve conter as colunas: Nome/Razão Social, CPF/CNPJ,
-                  Status
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Cancelar
-              </button>
-              <button type="submit" form="importForm" class="btn btn-gold">
-                <i class="fas fa-upload me-2"></i>Importar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+<!-- Incluir modals -->
+<%- include('../partials/modals') %>
 
-      <!-- Modal Novo Cedente -->
-      <div class="modal fade" id="novoCedenteModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">
-                <i class="fas fa-user-plus me-2"></i>Novo Cedente
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <form
-                id="novoCedenteForm"
-                method="POST"
-                action="/api/cedentes/novo"
-              >
-                <div class="mb-3">
-                  <label class="form-label">Nome/Razão Social</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="nome_razao_social"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">CPF/CNPJ</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="cpf_cnpj"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Data de Validade</label>
-                  <input
-                    type="date"
-                    class="form-control"
-                    name="data_validade"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Status</label>
-                  <select class="form-select" name="status" required>
-                    <option value="CONTRATO ASSINADO MANUALMENTE">
-                      CONTRATO ASSINADO MANUALMENTE
-                    </option>
-                    <option value="CONTRATO SEM ASSINATURA MANUAL E DIGITAL">
-                      CONTRATO SEM ASSINATURA MANUAL E DIGITAL
-                    </option>
-                    <option value="CONTRATO PRECISA SER RENOVADO">
-                      CONTRATO PRECISA SER RENOVADO
-                    </option>
-                    <option value="CONTRATOS IMPRESSOS QUE FALTAM ASSINAR">
-                      CONTRATOS IMPRESSOS QUE FALTAM ASSINAR
-                    </option>
-                    <option value="CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO">
-                      CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO
-                    </option>
-                    <option value="LEVOU O CONTRATO PARA ASSINAR">
-                      LEVOU O CONTRATO PARA ASSINAR
-                    </option>
-                  </select>
-                </div>
-                <div class="modal-footer">
-                  <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal"
-                  >
-                    Cancelar
-                  </button>
-                  <button type="submit" class="btn btn-gold">
-                    <i class="fas fa-save me-2"></i>Salvar
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal de Conferência de Documentos -->
-      <div class="modal fade" id="documentosModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">
-                <i class="fas fa-file-alt me-2"></i>Conferência de Documentos -
-                <span id="cedenteName"></span>
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <h6 class="mb-3">Documentos para cadastro PJ</h6>
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="list-group">
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span>Contrato Social</span>
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_contrato_social"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span>Cartão CNPJ</span>
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_cartao_cnpj"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span>Faturamento últimos 12 meses</span>
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_faturamento"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span>DRE / Balanço</span>
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_dre_balanco"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span>CNH ou RG sócios</span>
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_doc_socios"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="list-group">
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span>IR dos sócios</span>
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_ir_socios"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span
-                          >Comprovante de endereço (residência e empresa)</span
-                        >
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_comprovante_endereco"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span>E-mail</span>
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_email"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span>Curva ABC</span>
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_curva_abc"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="list-group-item">
-                      <div
-                        class="d-flex justify-content-between align-items-center"
-                      >
-                        <span>Dados Bancários</span>
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="check_dados_bancarios"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Detalhes dos Dados Bancários -->
-              <div
-                id="dados_bancarios_detalhes"
-                class="mt-4"
-                style="display: none"
-              >
-                <h6 class="mb-3">Detalhes dos Dados Bancários</h6>
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Tipo da conta</label>
-                    <input type="text" class="form-control" id="tipo_conta" />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Número do banco</label>
-                    <input type="text" class="form-control" id="numero_banco" />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Número da Agência</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="numero_agencia"
-                    />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Número da conta</label>
-                    <input type="text" class="form-control" id="numero_conta" />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Favorecido</label>
-                    <input type="text" class="form-control" id="favorecido" />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">CNPJ/CPF</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="cpf_cnpj_conta"
-                    />
-                  </div>
-                  <div class="col-12">
-                    <label class="form-label">Chave PIX</label>
-                    <input type="text" class="form-control" id="chave_pix" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Fechar
-              </button>
-              <button type="button" class="btn btn-gold">Salvar</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal de Status -->
-      <div class="modal fade" id="statusModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">
-                <i class="fas fa-flag me-2"></i>Alterar Status -
-                <span id="statusCedenteName"></span>
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <div class="list-group">
-                <!-- Contrato Assinado Manualmente -->
-                <button
-                  type="button"
-                  class="list-group-item list-group-item-action list-group-item-success d-flex justify-content-between align-items-center"
-                >
-                  <div>
-                    <h6 class="mb-1">CONTRATO ASSINADO MANUALMENTE</h6>
-                    <small>Contrato já foi assinado fisicamente</small>
-                  </div>
-                  <i class="fas fa-check-circle"></i>
-                </button>
-
-                <!-- Contrato sem Assinatura Digital -->
-                <button
-                  type="button"
-                  class="list-group-item list-group-item-action list-group-item-danger d-flex justify-content-between align-items-center"
-                >
-                  <div>
-                    <h6 class="mb-1">CONTRATO SEM ASSINATURA DIGITAL</h6>
-                    <small>Não entrei em contato</small>
-                  </div>
-                  <i class="fas fa-times-circle"></i>
-                </button>
-
-                <!-- Contrato precisa ser renovado -->
-                <button
-                  type="button"
-                  class="list-group-item list-group-item-action list-group-item-danger d-flex justify-content-between align-items-center"
-                >
-                  <div>
-                    <h6 class="mb-1">CONTRATO PRECISA SER RENOVADO</h6>
-                    <small>Não entrei em contato</small>
-                  </div>
-                  <i class="fas fa-exclamation-circle"></i>
-                </button>
-
-                <!-- Contratos impressos que faltam assinar -->
-                <button
-                  type="button"
-                  class="list-group-item list-group-item-action list-group-item-warning d-flex justify-content-between align-items-center"
-                >
-                  <div>
-                    <h6 class="mb-1">CONTRATOS IMPRESSOS QUE FALTAM ASSINAR</h6>
-                  </div>
-                  <i class="fas fa-file-signature"></i>
-                </button>
-
-                <!-- Cedentes que já foram avisados -->
-                <button
-                  type="button"
-                  class="list-group-item list-group-item-action list-group-item-info d-flex justify-content-between align-items-center"
-                >
-                  <div>
-                    <h6 class="mb-1">
-                      CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO
-                    </h6>
-                  </div>
-                  <i class="fas fa-bell"></i>
-                </button>
-
-                <!-- Levou o contrato para assinar -->
-                <button
-                  type="button"
-                  class="list-group-item list-group-item-action list-group-item-primary d-flex justify-content-between align-items-center"
-                >
-                  <div>
-                    <h6 class="mb-1">LEVOU O CONTRATO PARA ASSINAR</h6>
-                  </div>
-                  <i class="fas fa-file-export"></i>
-                </button>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal de Confirmação de Exclusão -->
-      <div class="modal fade" id="confirmacaoModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">
-                <i class="fas fa-exclamation-triangle text-danger me-2"></i
-                >Confirmar Exclusão
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <p id="mensagemConfirmacao">
-                Tem certeza que deseja excluir este item?
-              </p>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-danger"
-                id="btnConfirmarExclusao"
-              >
-                <i class="fas fa-trash me-2"></i>Excluir
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal de Edição -->
-      <div class="modal fade" id="editarModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">
-                <i class="fas fa-edit me-2"></i>Editar Cedente
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <form id="editarForm">
-                <input type="hidden" id="editar_id" />
-                <div class="mb-3">
-                  <label class="form-label">Nome/Razão Social</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="editar_nome_razao_social"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">CPF/CNPJ</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="editar_cpf_cnpj"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Data de Validade</label>
-                  <input
-                    type="date"
-                    class="form-control"
-                    id="editar_data_validade"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Status</label>
-                  <select class="form-select" id="editar_status" required>
-                    <option value="CONTRATO ASSINADO MANUALMENTE">
-                      CONTRATO ASSINADO MANUALMENTE
-                    </option>
-                    <option value="CONTRATO SEM ASSINATURA MANUAL E DIGITAL">
-                      CONTRATO SEM ASSINATURA MANUAL E DIGITAL
-                    </option>
-                    <option value="CONTRATO PRECISA SER RENOVADO">
-                      CONTRATO PRECISA SER RENOVADO
-                    </option>
-                    <option value="CONTRATOS IMPRESSOS QUE FALTAM ASSINAR">
-                      CONTRATOS IMPRESSOS QUE FALTAM ASSINAR
-                    </option>
-                    <option value="CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO">
-                      CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO
-                    </option>
-                    <option value="LEVOU O CONTRATO PARA ASSINAR">
-                      LEVOU O CONTRATO PARA ASSINAR
-                    </option>
-                  </select>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                onclick="salvarEdicao()"
-              >
-                <i class="fas fa-save me-2"></i>Salvar Alterações
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- Scripts necessários (ordem importante!) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Scripts específicos da página -->
-    <script>
-      // Inicializar todos os modais Bootstrap quando a página carregar
-      document.addEventListener("DOMContentLoaded", function () {
-        // Inicializar modais
-        const modais = [
-          "editarModal",
-          "confirmacaoModal",
-          "importModal",
-          "novoCedenteModal",
-          "documentosModal",
-        ].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) new bootstrap.Modal(el);
-        });
-      });
-
-      // Funções para manipulação de cedentes
-      async function verDetalhes(id) {
-        try {
-          const response = await fetch(`/dashboard/cedentes/${id}`);
-
-          if (!response.ok) {
-            throw new Error("Erro ao carregar dados do cedente");
-          }
-
-          const cedente = await response.json();
-
-          // Preencher formulário
-          document.getElementById("editar_id").value = cedente.id;
-          document.getElementById("editar_nome_razao_social").value =
-            cedente.nome_razao_social || "";
-          document.getElementById("editar_cpf_cnpj").value =
-            cedente.cpf_cnpj || "";
-          document.getElementById("editar_data_validade").value =
-            cedente.data_validade ? cedente.data_validade.split("T")[0] : "";
-          document.getElementById("editar_status").value = cedente.status || "";
-
-          // Abrir modal
-          const modal = new bootstrap.Modal(
-            document.getElementById("editarModal")
-          );
-          modal.show();
-        } catch (error) {
-          console.error("Erro:", error);
-          alert(error.message);
-        }
-      }
-
-      async function salvarEdicao() {
-        try {
-          const id = document.getElementById("editar_id").value;
-          const data = {
-            nome_razao_social: document.getElementById(
-              "editar_nome_razao_social"
-            ).value,
-            cpf_cnpj: document.getElementById("editar_cpf_cnpj").value,
-            data_validade: document.getElementById("editar_data_validade")
-              .value,
-            status: document.getElementById("editar_status").value,
-          };
-
-          const response = await fetch(`/dashboard/cedentes/${id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-
-          if (!response.ok) {
-            throw new Error("Erro ao salvar alterações");
-          }
-
-          bootstrap.Modal.getInstance(
-            document.getElementById("editarModal")
-          ).hide();
-          window.location.reload();
-        } catch (error) {
-          console.error("Erro:", error);
-          alert(error.message);
-        }
-      }
-
-      function confirmarExclusao(id, nome) {
-        document.getElementById(
-          "mensagemConfirmacao"
-        ).textContent = `Tem certeza que deseja excluir o cedente "${nome}"?`;
-
-        const modal = new bootstrap.Modal(
-          document.getElementById("confirmacaoModal")
-        );
-        document.getElementById("btnConfirmarExclusao").onclick = () =>
-          excluirCedente(id);
-        modal.show();
-      }
-
-      async function excluirCedente(id) {
-        try {
-          const response = await fetch(`/dashboard/cedentes/${id}`, {
-            method: "DELETE",
-          });
-
-          if (!response.ok) {
-            throw new Error("Erro ao excluir cedente");
-          }
-
-          bootstrap.Modal.getInstance(
-            document.getElementById("confirmacaoModal")
-          ).hide();
-          window.location.reload();
-        } catch (error) {
-          console.error("Erro:", error);
-          alert(error.message);
-        }
-      }
-
-      // Todos os scripts da página aqui
-      function getStatusClass(status) {
-        const statusClasses = {
-          "CONTRATO ASSINADO MANUALMENTE": "bg-success",
-          "CONTRATO SEM ASSINATURA MANUAL E DIGITAL": "bg-danger",
-          "CONTRATO PRECISA SER RENOVADO": "bg-danger",
-          "CONTRATOS IMPRESSOS QUE FALTAM ASSINAR": "bg-warning",
-          "CEDENTES QUE JÁ FORAM AVISADOS DA RENOVAÇÃO": "bg-info",
-          "LEVOU O CONTRATO PARA ASSINAR": "bg-primary",
-        };
-        return statusClasses[status] || "bg-secondary";
-      }
-
-      // Script para manipular o modal de documentos
-      document.addEventListener("DOMContentLoaded", function () {
-        const documentosModal = document.getElementById("documentosModal");
-        const cedenteName = document.getElementById("cedenteName");
-        const checkDadosBancarios = document.getElementById(
-          "check_dados_bancarios"
-        );
-        const dadosBancariosDetalhes = document.getElementById(
-          "dados_bancarios_detalhes"
-        );
-
-        if (documentosModal) {
-          documentosModal.addEventListener("show.bs.modal", function (event) {
-            const button = event.relatedTarget;
-            const nome = button ? button.getAttribute("data-cedente") : "";
-            cedenteName.textContent = nome;
-          });
-        }
-
-        if (checkDadosBancarios) {
-          // Mostrar/ocultar detalhes dos dados bancários quando o checkbox é marcado
-          checkDadosBancarios.addEventListener("change", function () {
-            dadosBancariosDetalhes.style.display = this.checked
-              ? "block"
-              : "none";
-          });
-        }
-      });
-
-      // Função utilitária para obter a instância do modal (compatível com várias versões do Bootstrap)
-      function getModalInstanceById(id) {
-        const el = document.getElementById(id);
-        if (!el || typeof bootstrap === "undefined") return null;
-        if (
-          bootstrap.Modal &&
-          typeof bootstrap.Modal.getOrCreateInstance === "function"
-        ) {
-          return bootstrap.Modal.getOrCreateInstance(el);
-        }
-        try {
-          return new bootstrap.Modal(el);
-        } catch (err) {
-          console.warn("Não foi possível criar Modal (versão/bootstrap):", err);
-          return null;
-        }
-      }
-
-      let cedenteIdParaExcluir = null;
-
-      function confirmarExclusao(id, nome) {
-        cedenteIdParaExcluir = id;
-        document.getElementById("mensagemConfirmacao").textContent =
-          'Tem certeza que deseja excluir o cedente "' + nome + '"?';
-        const m = getModalInstanceById("confirmacaoModal");
-        if (m && typeof m.show === "function") m.show();
-      }
-
-      function confirmarExclusaoTodos() {
-        cedenteIdParaExcluir = "todos";
-        document.getElementById("mensagemConfirmacao").textContent =
-          "Tem certeza que deseja excluir TODOS os cedentes? Esta ação não pode ser desfeita.";
-        const m = getModalInstanceById("confirmacaoModal");
-        if (m && typeof m.show === "function") m.show();
-      }
-
-      // Registrar listener estável para o botão de confirmação (evita reatribuições inconsistentes)
-      document.addEventListener("DOMContentLoaded", function () {
-        const btnConfirm = document.getElementById("btnConfirmarExclusao");
-        if (btnConfirm) {
-          btnConfirm.addEventListener("click", async function () {
-            if (cedenteIdParaExcluir === null) return;
-            // se for "todos" chama o endpoint geral
-            if (cedenteIdParaExcluir === "todos") {
-              await excluirTodosCedentes();
-            } else {
-              await excluirCedente();
-            }
-          });
-        }
-      });
-
-      async function excluirCedente() {
-        try {
-          const url = `/dashboard/cedentes/${cedenteIdParaExcluir}`;
-          const response = await fetch(url, {
-            method: "DELETE",
-            headers: { Accept: "application/json" },
-          });
-          const m = getModalInstanceById("confirmacaoModal");
-          if (response.ok) {
-            if (m && typeof m.hide === "function") m.hide();
-            window.location.reload();
-          } else {
-            const body = await response.json().catch(() => ({}));
-            console.error("Erro ao excluir cedente:", body);
-            if (m && typeof m.hide === "function") m.hide();
-            alert(body.error || "Erro ao excluir cedente");
-          }
-        } catch (error) {
-          console.error("Erro:", error);
-          alert("Erro ao excluir cedente");
-        } finally {
-          // resetar id para segurança
-          cedenteIdParaExcluir = null;
-        }
-      }
-
-      async function excluirTodosCedentes() {
-        try {
-          const response = await fetch("/dashboard/cedentes", {
-            method: "DELETE",
-            headers: { Accept: "application/json" },
-          });
-          const m = getModalInstanceById("confirmacaoModal");
-          if (response.ok) {
-            if (m && typeof m.hide === "function") m.hide();
-            window.location.reload();
-          } else {
-            const body = await response.json().catch(() => ({}));
-            console.error("Erro ao excluir todos:", body);
-            if (m && typeof m.hide === "function") m.hide();
-            alert(body.error || "Erro ao excluir cedentes");
-          }
-        } catch (error) {
-          console.error("Erro:", error);
-          alert("Erro ao excluir cedentes");
-        } finally {
-          cedenteIdParaExcluir = null;
-        }
-      }
-
-      // Navbar Scroll Effect
-      window.addEventListener("scroll", function () {
-        const navbar = document.querySelector(".navbar-modern");
-        if (navbar) {
-          if (window.scrollY > 50) {
-            navbar.classList.add("scrolled");
-          } else {
-            navbar.classList.remove("scrolled");
-          }
-        }
-      });
-
-      // Mobile Menu Toggle
-      const mobileBtn = document.querySelector(".mobile-menu-btn");
-      if (mobileBtn) {
-        mobileBtn.addEventListener("click", function () {
-          document.querySelector(".navbar-menu").classList.toggle("active");
-        });
-      }
-    </script>
-  </body>
-</html>
+<script src="/js/cedentes.js"></script>

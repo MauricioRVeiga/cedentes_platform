@@ -1,67 +1,138 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-      <%= typeof title !== 'undefined' ? title + ' - ' : '' %>Gold Credit
-    </title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link href="/css/style.css" rel="stylesheet" />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <!-- Navbar compartilhada -->
-    <nav class="navbar-modern">
-      <div class="navbar-container">
-        <div class="navbar-brand-modern">
-          <i class="fas fa-crown logo"></i>
-          <h1 class="title">Gold Credit</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'Gestão de Cedentes - Gold Credit SA' %></title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/css/style.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold-primary: #d4af37;
+            --gold-light: #e5c667;
+            --gold-dark: #b39030;
+            --green-primary: #0f766e;
+            --green-dark: #0c5952;
+            --transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/dashboard">
+                <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                    <i class="fas fa-gem text-dark"></i>
+                </div>
+                <div>
+                    <span class="fw-bold">Gold Credit SA</span>
+                    <small class="d-block text-warning">Gestão de Cedentes</small>
+                </div>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/insights">
+                                <i class="fas fa-chart-line me-1"></i>Insights
+                            </a>
+                        </li>
+                    <% } %>
+                </ul>
+                
+                <div class="navbar-nav">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-2"></i>
+                                <%= user.name %>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">
+                                    <i class="fas fa-cog me-2"></i>Configurações
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/auth/logout">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Sair
+                                </a></li>
+                            </ul>
+                        </div>
+                    <% } else { %>
+                        <a class="nav-link" href="/auth/login">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    <% } %>
+                </div>
+            </div>
         </div>
-        <div class="navbar-menu">
-          <a href="/dashboard" class="nav-link-modern">
-            <i class="fas fa-home"></i> Dashboard
-          </a>
-          <a href="/insights" class="nav-link-modern">
-            <i class="fas fa-chart-line"></i> Insights
-          </a>
-          <a href="#" class="nav-link-modern">
-            <i class="fas fa-cog"></i> Configurações
-          </a>
-        </div>
-        <button class="mobile-menu-btn">
-          <i class="fas fa-bars"></i>
-        </button>
-      </div>
     </nav>
 
-    <main class="main-content"><%- body %></main>
+    <!-- Main Content -->
+    <main class="container-fluid py-4">
+        <!-- Flash Messages -->
+        <% if (success_msg && success_msg.length > 0) { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= success_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+        
+        <% if (error_msg && error_msg.length > 0) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <%= error_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
 
+        <!-- Page Content -->
+        <%- body %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="text-warning">
+                        <i class="fas fa-gem me-2"></i>Gold Credit SA
+                    </h5>
+                    <p class="mb-0">Sistema de Gestão de Cedentes</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">
+                        <i class="fas fa-code me-1"></i>
+                        Desenvolvido com Node.js & Bootstrap
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      // Navbar Scroll Effect
-      window.addEventListener("scroll", function () {
-        const navbar = document.querySelector(".navbar-modern");
-        if (window.scrollY > 50) {
-          navbar.classList.add("scrolled");
-        } else {
-          navbar.classList.remove("scrolled");
-        }
-      });
-
-      // Mobile Menu Toggle
-      document
-        .querySelector(".mobile-menu-btn")
-        .addEventListener("click", function () {
-          document.querySelector(".navbar-menu").classList.toggle("active");
-        });
-    </script>
-    <%- typeof script !== 'undefined' ? script : '' %>
-  </body>
+    <script src="/js/cedentes.js"></script>
+    
+    <% if (typeof script !== 'undefined' && script) { %>
+        <script><%= script %></script>
+    <% } %>
+</body>
 </html>
